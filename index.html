@@ -134,6 +134,39 @@
   }
   .section-body { padding: 4px 24px 16px 24px; }
 
+  /* ── Collapsible sections ───────────────────────────────────── */
+  .section.collapsible > .section-head {
+    cursor: pointer;
+    user-select: none;
+  }
+  .section.collapsible > .section-head::after {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid var(--ink-mute);
+    border-bottom: 1.5px solid var(--ink-mute);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 200ms ease;
+    flex-shrink: 0;
+  }
+  .section.collapsible.collapsed > .section-head::after {
+    transform: rotate(-45deg) translateY(1px);
+  }
+  .section.collapsible > .section-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 220ms ease;
+    overflow: hidden;
+  }
+  .section.collapsible.collapsed > .section-body {
+    grid-template-rows: 0fr;
+  }
+  .section.collapsible > .section-body > .section-body-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+
   /* ── Control row ────────────────────────────────────────────── */
   .ctl {
     display: grid;
@@ -1354,6 +1387,36 @@ document.addEventListener('keydown', (e) => {
     render();
   }
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   COLLAPSIBLE SECTIONS
+   ═══════════════════════════════════════════════════════════════ */
+(function initCollapsible() {
+  // Sections 01–04: collapsible. 01 open by default, 02–04 closed.
+  const collapsibleSecs = ['geom', 'motion', 'perspective', 'ground'];
+  const closedByDefault = ['motion', 'perspective', 'ground'];
+
+  collapsibleSecs.forEach(sec => {
+    const el = document.querySelector(`.section[data-sec="${sec}"]`);
+    if (!el) return;
+
+    // Wrap body children in inner div for grid-row animation
+    const body = el.querySelector('.section-body');
+    const inner = document.createElement('div');
+    inner.className = 'section-body-inner';
+    while (body.firstChild) inner.appendChild(body.firstChild);
+    body.appendChild(inner);
+
+    // Mark as collapsible (± collapsed)
+    el.classList.add('collapsible');
+    if (closedByDefault.includes(sec)) el.classList.add('collapsed');
+
+    // Click handler on header
+    el.querySelector('.section-head').addEventListener('click', () => {
+      el.classList.toggle('collapsed');
+    });
+  });
+})();
 
 /* ═══════════════════════════════════════════════════════════════
    INIT
