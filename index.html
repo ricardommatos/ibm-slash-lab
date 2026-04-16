@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Slash Lab · Author Your Future w/ IBM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --ink: #161616;
+    --ink-soft: #525252;
+    --ink-mute: #8d8d8d;
+    --rule: #e5e5e5;
+    --rule-hard: #c6c6c6;
+    --accent: #0f62fe;
+    --accent-soft: #e8efff;
+    --grid-dot: #d0d0d0;
+    --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.4;
+    overflow: hidden;
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    grid-template-rows: 56px 1fr 48px;
+    grid-template-areas:
+      "head head head"
+      "left stage right"
+      "foot foot foot";
+    height: 100vh;
+  }
+  .head { grid-area: head; border-bottom: 1px solid var(--rule); }
+  .left { grid-area: left; border-right: 1px solid var(--rule); overflow-y: auto; background: var(--surface); }
+  .stage { grid-area: stage; position: relative; overflow: hidden; }
+  .right { grid-area: right; border-left: 1px solid var(--rule); overflow-y: auto; background: var(--surface); }
+  .foot { grid-area: foot; border-top: 1px solid var(--rule); }
+
+  /* ── Head ───────────────────────────────────────────────────── */
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: var(--surface);
+  }
+  .head-mark {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .logo {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+  .divider { width: 1px; height: 20px; background: var(--rule-hard); }
+  .tool-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .tool-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .head-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: flex;
+    gap: 20px;
+  }
+  .head-meta span.live::before {
+    content: "";
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+
+  /* ── Rail sections ──────────────────────────────────────────── */
+  .section { border-bottom: 1px solid var(--rule); }
+  .section:last-child { border-bottom: none; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 14px 24px 10px 24px;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .section-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+  }
+  .section-body { padding: 4px 24px 16px 24px; }
+
+  /* ── Control row ────────────────────────────────────────────── */
+  .ctl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 2px 12px;
+    padding: 10px 0;
+  }
+  .ctl-label {
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+  .ctl-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ctl-slider { grid-column: 1 / -1; margin-top: 6px; }
+
+  /* Custom range — flat, instrument-like */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    height: 20px;
+    cursor: ew-resize;
+    margin: 0;
+  }
+  input[type="range"]:focus { outline: none; }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 1px;
+    background: var(--rule-hard);
+    border-radius: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2px;
+    height: 14px;
+    background: var(--ink);
+    border-radius: 0;
+    margin-top: -6.5px;
+    transition: background 120ms, transform 120ms;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { background: var(--accent); transform: scaleY(1.15); }
+  input[type="range"]:focus::-webkit-slider-thumb { background: var(--accent); }
+  input[type="range"]::-moz-range-track {
+    height: 1px;
+    background: var(--rule-hard);
+    border: none;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 2px;
+    height: 14px;
+    background: var(--ink);
+    border: none;
+    border-radius: 0;
+    cursor: ew-resize;
+  }
+  input[type="range"]:hover::-moz-range-thumb,
+  input[type="range"]:focus::-moz-range-thumb { background: var(--accent); }
+
+  /* ── Swatches ───────────────────────────────────────────────── */
+  .swatch-row {
+    display: flex;
+    gap: 4px;
+    padding: 4px 0 2px 0;
+  }
+  .swatch {
+    width: 24px; height: 24px;
+    cursor: pointer;
+    border: 1px solid var(--rule-hard);
+    transition: transform 120ms;
+    position: relative;
+  }
+  .swatch.active::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border: 1px solid var(--accent);
+    pointer-events: none;
+  }
+  .swatch:hover { transform: translateY(-1px); }
+
+  /* ── Toggle ─────────────────────────────────────────────────── */
+  .toggle-group {
+    display: flex;
+    border: 1px solid var(--rule-hard);
+    width: 100%;
+  }
+  .toggle-opt {
+    flex: 1;
+    padding: 6px 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    border-right: 1px solid var(--rule-hard);
+    transition: background 120ms, color 120ms;
+  }
+  .toggle-opt:last-child { border-right: none; }
+  .toggle-opt.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .toggle-opt:hover:not(.active) { background: var(--bg); color: var(--ink); }
+
+  /* ── Buttons ────────────────────────────────────────────────── */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+    transition: background 120ms, color 120ms;
+  }
+  .btn + .btn { margin-top: 6px; }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  .btn.btn-accent { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn.btn-accent:hover { background: var(--accent); border-color: var(--accent); }
+  .btn-arrow::after { content: "  →"; float: right; font-family: var(--mono); }
+  .file-btn input { display: none; }
+
+  /* ── Preset list ────────────────────────────────────────────── */
+  .preset {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    cursor: pointer;
+    border-top: 1px solid var(--rule);
+  }
+  .preset:first-child { border-top: none; }
+  .preset:hover { background: var(--bg); margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+  .preset-thumb {
+    width: 48px; height: 28px;
+    border: 1px solid var(--rule-hard);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .preset-thumb svg { display: block; width: 100%; height: 100%; }
+  .preset-name {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .preset-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── JSON panel ─────────────────────────────────────────────── */
+  .json-panel {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--bg);
+    padding: 12px 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre;
+    border: 1px solid var(--rule-hard);
+    position: relative;
+  }
+  .json-key { color: var(--ink-soft); }
+  .json-num { color: var(--accent); }
+  .json-str { color: var(--ink); }
+  .copy-json {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 7px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--surface);
+    border: 1px solid var(--rule-hard);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .copy-json:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* ── Stage ──────────────────────────────────────────────────── */
+  .stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: var(--bg);
+  }
+  .stage-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .frame {
+    position: relative;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--rule-hard);
+    overflow: hidden;
+    transition: width 200ms ease-out, height 200ms ease-out, background 200ms;
+  }
+  .frame-bg-img {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 200ms;
+    z-index: 1;
+  }
+  .frame-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .frame svg.slash-svg {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    cursor: grab;
+    touch-action: none;
+  }
+  .frame svg.slash-svg.dragging { cursor: grabbing; }
+  .frame-ticks {
+    position: absolute;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  .tick-tl { top: 10px; left: 12px; }
+  .tick-tr { top: 10px; right: 12px; }
+  .tick-bl { bottom: 10px; left: 12px; }
+  .tick-br { bottom: 10px; right: 12px; }
+
+  /* Brackets — Swiss corner marks */
+  .frame-brackets {
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+  }
+  .frame-brackets svg { width: 100%; height: 100%; display: block; }
+
+  /* ── Foot ───────────────────────────────────────────────────── */
+  .foot {
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .foot-readout { display: flex; gap: 24px; }
+  .foot-readout span strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .foot-credit { color: var(--ink-mute); }
+
+  /* ── Scrollbar ──────────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--rule-hard); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-mute); }
+
+  /* Subtle shift indicator (for keyboard focus) */
+  .focus-ring:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Prevent image drag artifacts */
+  img { user-select: none; -webkit-user-drag: none; }
+
+  /* Small responsive guard */
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 260px 1fr 280px; }
+  }
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: 56px 40vh 1fr 40px;
+      grid-template-areas: "head" "stage" "left" "foot";
+    }
+    .right { display: none; }
+    .left { border-right: none; border-top: 1px solid var(--rule); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══ HEADER ════════════════════════════════════════════════ -->
+  <header class="head">
+    <div class="head-mark">
+      <div class="logo">IBM</div>
+      <div class="divider"></div>
+      <div>
+        <div class="tool-name">Slash Lab</div>
+        <div class="tool-sub">Author Your Future w/ IBM · v0.1</div>
+      </div>
+    </div>
+    <div class="head-meta">
+      <span>Code and Theory · April 2026</span>
+      <span class="live">Live</span>
+    </div>
+  </header>
+
+  <!-- ═══ LEFT RAIL — CONTROLS ═════════════════════════════════ -->
+  <aside class="left" id="left-rail">
+
+    <!-- 01 · Geometry -->
+    <div class="section" data-sec="geom">
+      <div class="section-head">
+        <div><span class="section-num">01</span> <span class="section-title">Geometry</span></div>
+        <span class="section-hint">°·px·%</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Angle — off vertical</div>
+          <div class="ctl-value" id="v-angle">15°</div>
+          <div class="ctl-slider"><input type="range" id="angle" class="focus-ring" min="-45" max="45" step="0.5" value="15"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Weight</div>
+          <div class="ctl-value" id="v-weight">48 px</div>
+          <div class="ctl-slider"><input type="range" id="weight" class="focus-ring" min="2" max="300" step="1" value="48"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Length</div>
+          <div class="ctl-value" id="v-length">100 %</div>
+          <div class="ctl-slider"><input type="range" id="length" class="focus-ring" min="30" max="300" step="1" value="100"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 · Motion -->
+    <div class="section" data-sec="motion">
+      <div class="section-head">
+        <div><span class="section-num">02</span> <span class="section-title">Motion</span></div>
+        <span class="section-hint">fade</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Fade — arriving end</div>
+          <div class="ctl-value" id="v-fadeStart">12 %</div>
+          <div class="ctl-slider"><input type="range" id="fadeStart" class="focus-ring" min="0" max="50" step="1" value="12"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Fade — leaving end</div>
+          <div class="ctl-value" id="v-fadeEnd">12 %</div>
+          <div class="ctl-slider"><input type="range" id="fadeEnd" class="focus-ring" min="0" max="50" step="1" value="12"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 · Perspective + Position -->
+    <div class="section" data-sec="perspective">
+      <div class="section-head">
+        <div><span class="section-num">03</span> <span class="section-title">Perspective · Position</span></div>
+        <span class="section-hint">drag · scroll</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Tilt X — forward</div>
+          <div class="ctl-value" id="v-tiltX">0°</div>
+          <div class="ctl-slider"><input type="range" id="tiltX" class="focus-ring" min="-75" max="75" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Tilt Y — sideways</div>
+          <div class="ctl-value" id="v-tiltY">0°</div>
+          <div class="ctl-slider"><input type="range" id="tiltY" class="focus-ring" min="-75" max="75" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Depth</div>
+          <div class="ctl-value" id="v-depth">1400</div>
+          <div class="ctl-slider"><input type="range" id="depth" class="focus-ring" min="400" max="4000" step="50" value="1400"></div>
+        </div>
+        <div class="ctl" style="padding-top:8px;">
+          <div class="ctl-label">Offset X</div>
+          <div class="ctl-value" id="v-posX">0 %</div>
+          <div class="ctl-slider"><input type="range" id="posX" class="focus-ring" min="-50" max="50" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Offset Y</div>
+          <div class="ctl-value" id="v-posY">0 %</div>
+          <div class="ctl-slider"><input type="range" id="posY" class="focus-ring" min="-50" max="50" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Offset Z</div>
+          <div class="ctl-value" id="v-posZ">0</div>
+          <div class="ctl-slider"><input type="range" id="posZ" class="focus-ring" min="-600" max="800" step="10" value="0"></div>
+        </div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; line-height:1.6; padding-top:6px;">
+          Drag the slash to move · scroll to push on Z
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 · Ground -->
+    <div class="section" data-sec="ground">
+      <div class="section-head">
+        <div><span class="section-num">04</span> <span class="section-title">Ground &amp; Ink</span></div>
+        <span class="section-hint">Carbon</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl" style="padding-bottom:4px;">
+          <div class="ctl-label">Ground</div>
+          <div class="ctl-value" id="v-bg">#fafafa</div>
+          <div class="swatch-row" id="sw-bg" style="grid-column:1/-1;"></div>
+        </div>
+        <div class="ctl" style="padding-bottom:4px;">
+          <div class="ctl-label">Ink — the slash</div>
+          <div class="ctl-value" id="v-ink">#161616</div>
+          <div class="swatch-row" id="sw-ink" style="grid-column:1/-1;"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Grid overlay</div>
+          <div class="ctl-value" id="v-grid">Off</div>
+          <div class="ctl-slider">
+            <div class="toggle-group" id="tg-grid">
+              <button class="toggle-opt active" data-val="0">Off</button>
+              <button class="toggle-opt" data-val="1">Thin</button>
+              <button class="toggle-opt" data-val="2">Dense</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 · Image -->
+    <div class="section" data-sec="image">
+      <div class="section-head">
+        <div><span class="section-num">05</span> <span class="section-title">Image Bed</span></div>
+        <span class="section-hint">optional</span>
+      </div>
+      <div class="section-body">
+        <label class="btn file-btn">
+          <span id="img-label">Upload · PNG · JPG · SVG</span>
+          <input type="file" id="img-upload" accept="image/*">
+        </label>
+        <div class="ctl" style="padding-top:14px;">
+          <div class="ctl-label">Mode</div>
+          <div class="ctl-value" id="v-imgMode">—</div>
+          <div class="ctl-slider">
+            <div class="toggle-group" id="tg-imgMode">
+              <button class="toggle-opt active" data-val="background">Background</button>
+              <button class="toggle-opt" data-val="mask">Inside slash</button>
+            </div>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Opacity</div>
+          <div class="ctl-value" id="v-imgOp">100 %</div>
+          <div class="ctl-slider"><input type="range" id="imgOp" class="focus-ring" min="0" max="100" step="1" value="100"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Position X</div>
+          <div class="ctl-value" id="v-imgX">50 %</div>
+          <div class="ctl-slider"><input type="range" id="imgX" class="focus-ring" min="0" max="100" step="1" value="50"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Position Y</div>
+          <div class="ctl-value" id="v-imgY">50 %</div>
+          <div class="ctl-slider"><input type="range" id="imgY" class="focus-ring" min="0" max="100" step="1" value="50"></div>
+        </div>
+        <button class="btn" id="img-clear" style="font-size:10px; padding:8px 12px;">Remove image</button>
+      </div>
+    </div>
+
+    <!-- 06 · Frame -->
+    <div class="section" data-sec="frame">
+      <div class="section-head">
+        <div><span class="section-num">06</span> <span class="section-title">Frame</span></div>
+        <span class="section-hint">aspect</span>
+      </div>
+      <div class="section-body">
+        <div class="toggle-group" id="tg-aspect" style="margin-bottom:10px;">
+          <button class="toggle-opt" data-val="1:1">1:1</button>
+          <button class="toggle-opt active" data-val="16:9">16:9</button>
+          <button class="toggle-opt" data-val="9:16">9:16</button>
+          <button class="toggle-opt" data-val="4:3">4:3</button>
+          <button class="toggle-opt" data-val="3:4">3:4</button>
+        </div>
+        <div class="toggle-group" id="tg-aspect2">
+          <button class="toggle-opt" data-val="2:1">2:1 OOH</button>
+          <button class="toggle-opt" data-val="5:2">5:2 Transit</button>
+          <button class="toggle-opt" data-val="1:3">1:3 Skyscraper</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ STAGE ══════════════════════════════════════════════════ -->
+  <main class="stage">
+    <div class="stage-grid-bg"></div>
+    <div class="frame" id="frame">
+      <div class="frame-bg-img" id="frame-bg"></div>
+      <div class="frame-grid" id="frame-grid" style="display:none;"></div>
+      <svg class="slash-svg" id="slash-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="frame-brackets">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <!-- corner brackets as thin L marks -->
+          <path d="M 0 10 L 0 0 L 10 0" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+          <path d="M 90 0 L 100 0 L 100 10" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+          <path d="M 100 90 L 100 100 L 90 100" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+          <path d="M 10 100 L 0 100 L 0 90" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+      <div class="frame-ticks tick-tl" id="tick-spec">16:9</div>
+      <div class="frame-ticks tick-tr" id="tick-dim">0 × 0</div>
+      <div class="frame-ticks tick-bl">IBM · Slash Lab</div>
+      <div class="frame-ticks tick-br" id="tick-angle">15°</div>
+    </div>
+  </main>
+
+  <!-- ═══ RIGHT RAIL — PRESETS · EXPORT · STATE ═══════════════════ -->
+  <aside class="right">
+
+    <!-- Presets -->
+    <div class="section">
+      <div class="section-head">
+        <div><span class="section-num">07</span> <span class="section-title">Presets</span></div>
+        <span class="section-hint">from pitch</span>
+      </div>
+      <div class="section-body" id="presets"></div>
+    </div>
+
+    <!-- Export -->
+    <div class="section">
+      <div class="section-head">
+        <div><span class="section-num">08</span> <span class="section-title">Export</span></div>
+        <span class="section-hint">asset</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-arrow" id="ex-svg">Download SVG</button>
+        <button class="btn btn-arrow" id="ex-png">Download PNG · 2×</button>
+        <button class="btn btn-arrow" id="ex-json">Copy JSON state</button>
+      </div>
+    </div>
+
+    <!-- Live state -->
+    <div class="section">
+      <div class="section-head">
+        <div><span class="section-num">09</span> <span class="section-title">State · AI Schema</span></div>
+        <span class="section-hint">read-only</span>
+      </div>
+      <div class="section-body">
+        <div class="json-panel" id="json-view"><button class="copy-json" id="copy-json">Copy</button></div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; margin-top:10px; line-height:1.6;">
+          Every field is named, ranged, and serialisable. A creative brief that an agent can read and reproduce without interpretation.
+        </div>
+      </div>
+    </div>
+
+    <!-- Footnote -->
+    <div class="section">
+      <div class="section-head" style="padding-bottom:14px;">
+        <div><span class="section-num">10</span> <span class="section-title">Principles</span></div>
+      </div>
+      <div class="section-body" style="padding-top:0;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); letter-spacing:0.04em; line-height:1.7;">
+          <div style="display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--rule);"><span style="color:var(--ink-mute); width:20px;">01</span><span>Slash always at ≥ 5° — never vertical, never horizontal.</span></div>
+          <div style="display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--rule);"><span style="color:var(--ink-mute); width:20px;">02</span><span>Blue 60 is used once. The single color moment.</span></div>
+          <div style="display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--rule);"><span style="color:var(--ink-mute); width:20px;">03</span><span>Motion-blur fade at ends — form enters &amp; exits.</span></div>
+          <div style="display:flex; gap:10px; padding:4px 0;"><span style="color:var(--ink-mute); width:20px;">04</span><span>Parallax, not projectile. No bounce, no spectacle.</span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ FOOT ════════════════════════════════════════════════════ -->
+  <footer class="foot">
+    <div class="foot-readout">
+      <span>Angle <strong id="f-angle">15°</strong></span>
+      <span>Weight <strong id="f-weight">48</strong></span>
+      <span>Tilt X <strong id="f-tiltX">0°</strong></span>
+      <span>Tilt Y <strong id="f-tiltY">0°</strong></span>
+      <span>Pos <strong id="f-pos">0, 0</strong></span>
+      <span>Aspect <strong id="f-aspect">16:9</strong></span>
+    </div>
+    <div class="foot-credit">Author Your Future w/ IBM · Restraint over spectacle</div>
+  </footer>
+</div>
+
+
+<script>
+/* ═════════════════════════════════════════════════════════════════
+   SLASH LAB · v0.1
+   A parametric instrument for the "/" mark.
+   Every value is named, ranged, and serialisable.
+   ─────────────────────────────────────────────────────────────── */
+
+/* ── Carbon palette ─────────────────────────────────────────── */
+const PALETTE = {
+  ground: [
+    {name:"White",    hex:"#ffffff"},
+    {name:"Gray 10",  hex:"#f4f4f4"},
+    {name:"Gray 30",  hex:"#c6c6c6"},
+    {name:"Gray 70",  hex:"#525252"},
+    {name:"Gray 100", hex:"#161616"},
+    {name:"Blue 60",  hex:"#0f62fe"},
+    {name:"Blue 80",  hex:"#002d9c"},
+    {name:"Off-white",hex:"#fafafa"}
+  ],
+  ink: [
+    {name:"Gray 100", hex:"#161616"},
+    {name:"Gray 70",  hex:"#525252"},
+    {name:"Gray 30",  hex:"#c6c6c6"},
+    {name:"White",    hex:"#ffffff"},
+    {name:"Blue 60",  hex:"#0f62fe"},
+    {name:"Blue 80",  hex:"#002d9c"},
+    {name:"Warm 100", hex:"#161417"},
+    {name:"Off-white",hex:"#fafafa"}
+  ]
+};
+
+/* ── Presets ─────────────────────────────────────────────────── */
+const PRESETS = [
+  { id:"foundation",    name:"Foundations",          tag:"00",
+    state:{angle:15, weight:56, length:110, fadeStart:0,  fadeEnd:0,  tiltX:0,  tiltY:0,  depth:1400, bg:"#fafafa", ink:"#161616", grid:1, aspect:"16:9", imgOp:100, imgX:50, imgY:50} },
+  { id:"declare",       name:"TVC · Declare",        tag:"02",
+    state:{angle:15, weight:44, length:120, fadeStart:0,  fadeEnd:0,  tiltX:0,  tiltY:0,  depth:1400, bg:"#0a0a0a", ink:"#ffffff", grid:0, aspect:"16:9", imgOp:100, imgX:50, imgY:50} },
+  { id:"ramp",          name:"TVC · Ramp",           tag:"04",
+    state:{angle:15, weight:110,length:110, fadeStart:0,  fadeEnd:0,  tiltX:60, tiltY:12, depth:900,  bg:"#161616", ink:"#c6c6c6", grid:0, aspect:"16:9", imgOp:100, imgX:50, imgY:50} },
+  { id:"ooh-portrait",  name:"OOH · A1 Portrait",    tag:"03a",
+    state:{angle:15, weight:72, length:130, fadeStart:14, fadeEnd:14, tiltX:0,  tiltY:0,  depth:1400, bg:"#fafafa", ink:"#161616", grid:0, aspect:"3:4",  imgOp:100, imgX:50, imgY:50} },
+  { id:"ooh-billboard", name:"OOH · Highway 14×48",  tag:"03b",
+    state:{angle:15, weight:68, length:120, fadeStart:14, fadeEnd:14, tiltX:0,  tiltY:0,  depth:1400, bg:"#161616", ink:"#ffffff", grid:0, aspect:"2:1",  imgOp:100, imgX:50, imgY:50} },
+  { id:"ooh-transit",   name:"OOH · Transit Wrap",   tag:"03c",
+    state:{angle:15, weight:48, length:100, fadeStart:18, fadeEnd:18, tiltX:0,  tiltY:0,  depth:1400, bg:"#0f62fe", ink:"#ffffff", grid:0, aspect:"5:2",  imgOp:100, imgX:50, imgY:50} },
+  { id:"signature",     name:"Signature · Print",    tag:"sig",
+    state:{angle:15, weight:18, length:60,  fadeStart:0,  fadeEnd:0,  tiltX:0,  tiltY:0,  depth:1400, bg:"#fafafa", ink:"#0f62fe", grid:0, aspect:"1:1",  imgOp:100, imgX:50, imgY:50} },
+  { id:"alongside",     name:"Motion · Alongside",   tag:"01",
+    state:{angle:15, weight:80, length:130, fadeStart:8,  fadeEnd:8,  tiltX:0,  tiltY:24, depth:1200, bg:"#fafafa", ink:"#161616", grid:0, aspect:"16:9", imgOp:100, imgX:50, imgY:50} }
+];
+
+/* ── Aspect ratios ──────────────────────────────────────────── */
+const ASPECTS = {
+  "1:1":  {w:1, h:1},
+  "16:9": {w:16, h:9},
+  "9:16": {w:9, h:16},
+  "4:3":  {w:4, h:3},
+  "3:4":  {w:3, h:4},
+  "2:1":  {w:2, h:1},
+  "5:2":  {w:5, h:2},
+  "1:3":  {w:1, h:3}
+};
+
+/* ── Default state ──────────────────────────────────────────── */
+const DEFAULT_STATE = {
+  angle: 15, weight: 48, length: 100,
+  fadeStart: 12, fadeEnd: 12,
+  tiltX: 0, tiltY: 0, depth: 1400,
+  posX: 0, posY: 0, posZ: 0,
+  bg: "#fafafa", ink: "#161616",
+  grid: 0,
+  aspect: "16:9",
+  imgMode: "background", imgOp: 100, imgX: 50, imgY: 50
+};
+
+let state = loadState() || { ...DEFAULT_STATE };
+let image = null;
+
+/* ── DOM refs ───────────────────────────────────────────────── */
+const frameEl   = document.getElementById('frame');
+const svgEl     = document.getElementById('slash-svg');
+const bgEl      = document.getElementById('frame-bg');
+const gridEl    = document.getElementById('frame-grid');
+const tickSpec  = document.getElementById('tick-spec');
+const tickDim   = document.getElementById('tick-dim');
+const tickAngle = document.getElementById('tick-angle');
+
+/* ── Helpers ────────────────────────────────────────────────── */
+function hexToRGBA(hex, alpha){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function resizeFrame(){
+  const [aw, ah] = state.aspect.split(':').map(Number);
+  const ratio = aw/ah;
+  const stage = document.querySelector('.stage');
+  const maxW = stage.clientWidth  - 120;
+  const maxH = stage.clientHeight - 120;
+  let fw, fh;
+  if (maxW / ratio <= maxH) { fw = maxW; fh = maxW / ratio; }
+  else                      { fh = maxH; fw = maxH * ratio; }
+  frameEl.style.width  = fw + 'px';
+  frameEl.style.height = fh + 'px';
+  return { fw, fh };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER — the heart of v0.1
+   Rectangle in local coords → Z rotate (angle) → X/Y tilt → project
+   ═══════════════════════════════════════════════════════════════ */
+function render(){
+  const { fw, fh } = resizeFrame();
+  frameEl.style.background = state.bg;
+
+  const diag = Math.hypot(fw, fh);
+  const L = (state.length / 100) * diag;
+  const W = state.weight;
+
+  const aR = state.angle * Math.PI / 180;
+  const xR = state.tiltX * Math.PI / 180;
+  const yR = state.tiltY * Math.PI / 180;
+  const cA = Math.cos(aR), sA = Math.sin(aR);
+  const cX = Math.cos(xR), sX = Math.sin(xR);
+  const cY = Math.cos(yR), sY = Math.sin(yR);
+
+  const corners = [
+    {x:-W/2, y:-L/2, z:0},
+    {x: W/2, y:-L/2, z:0},
+    {x: W/2, y: L/2, z:0},
+    {x:-W/2, y: L/2, z:0}
+  ];
+
+  const offX = (state.posX / 100) * fw;
+  const offY = (state.posY / 100) * fh;
+  const offZ = state.posZ || 0;
+
+  const projected = corners.map(p => {
+    // Z rotation (slash angle)
+    let x = p.x*cA - p.y*sA;
+    let y = p.x*sA + p.y*cA;
+    let z = p.z + offZ;          // Z offset moves slash in depth
+    // X rotation (forward tilt)
+    const y1 = y*cX - z*sX;
+    const z1 = y*sX + z*cX;
+    y = y1; z = z1;
+    // Y rotation (sideways tilt)
+    const x1 = x*cY + z*sY;
+    const z2 = -x*sY + z*cY;
+    x = x1; z = z2;
+    // Perspective projection + X/Y offset
+    const d = state.depth;
+    const s = d / (d + z);
+    return { x: x*s + fw/2 + offX, y: y*s + fh/2 + offY };
+  });
+
+  const pts = projected.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+
+  // Gradient direction along the long axis of the projected rect
+  const mTop = { x: (projected[0].x + projected[1].x)/2, y: (projected[0].y + projected[1].y)/2 };
+  const mBot = { x: (projected[2].x + projected[3].x)/2, y: (projected[2].y + projected[3].y)/2 };
+
+  const fs = state.fadeStart / 100, fe = state.fadeEnd / 100;
+  const inkRGBA = hexToRGBA(state.ink, 0);
+  const inkSolid = state.ink;
+
+  const gradId = 'slash-fade';
+  const clipId = 'slash-clip';
+
+  // "Inside slash": image clipped to slash shape (on top of bgEl background)
+  const isMask = image && state.imgMode === 'mask';
+
+  const defs = `
+    <defs>
+      <linearGradient id="${gradId}" x1="${mTop.x}" y1="${mTop.y}" x2="${mBot.x}" y2="${mBot.y}" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="${fs === 0 ? inkSolid : inkRGBA}"/>
+        <stop offset="${(fs*100).toFixed(1)}%" stop-color="${inkSolid}"/>
+        <stop offset="${((1-fe)*100).toFixed(1)}%" stop-color="${inkSolid}"/>
+        <stop offset="100%" stop-color="${fe === 0 ? inkSolid : inkRGBA}"/>
+      </linearGradient>
+      ${isMask ? `
+        <clipPath id="${clipId}" clipPathUnits="userSpaceOnUse">
+          <polygon points="${pts}"/>
+        </clipPath>
+      ` : ''}
+    </defs>
+  `;
+
+  let body = '';
+  if (isMask) {
+    // Show the image clipped to the slash shape, over the background image
+    const px = state.imgX, py = state.imgY;
+    const bgPos = `${px}% ${py}%`;
+    body = `
+      <g clip-path="url(#${clipId})">
+        <image href="${image.url}" x="0" y="0" width="${fw}" height="${fh}"
+          preserveAspectRatio="x${px < 25 ? 'Min' : px > 75 ? 'Max' : 'Mid'}Y${py < 25 ? 'Min' : py > 75 ? 'Max' : 'Mid'} slice"
+          opacity="1"/>
+      </g>
+      ${(fs > 0 || fe > 0) ? `<polygon points="${pts}" fill="url(#${gradId})" opacity="0.12"/>` : ''}
+    `;
+  } else {
+    body = `<polygon points="${pts}" fill="url(#${gradId})"/>`;
+  }
+
+  svgEl.setAttribute('viewBox', `0 0 ${fw} ${fh}`);
+  svgEl.innerHTML = defs + body;
+
+  // Image always shows in background when uploaded
+  if (image) {
+    bgEl.style.backgroundImage = `url("${image.url}")`;
+    bgEl.style.backgroundPosition = `${state.imgX}% ${state.imgY}%`;
+    // In mask mode, background is dimmed proportionally (0 = fully hidden)
+    bgEl.style.opacity = isMask ? (state.imgOp / 100) * 0.35 : state.imgOp / 100;
+    bgEl.style.display = 'block';
+  } else {
+    bgEl.style.display = 'none';
+  }
+
+  // Grid overlay
+  gridEl.style.display = state.grid ? 'block' : 'none';
+  if (state.grid) {
+    const gs = state.grid === 1 ? 48 : 16;
+    gridEl.style.backgroundSize = `${gs}px ${gs}px`;
+  }
+
+  tickSpec.textContent = state.aspect;
+  tickDim.textContent  = `${Math.round(fw)} × ${Math.round(fh)}`;
+  tickAngle.textContent = `${state.angle.toFixed(1)}°`.replace('.0°', '°');
+
+  updateReadouts();
+  updateFooter();
+  updateJSON();
+  saveState();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONTROL WIRING
+   ═══════════════════════════════════════════════════════════════ */
+
+function updateReadouts(){
+  document.getElementById('v-angle').textContent     = `${state.angle.toFixed(1)}°`.replace('.0°', '°');
+  document.getElementById('v-weight').textContent    = `${state.weight} px`;
+  document.getElementById('v-length').textContent    = `${state.length} %`;
+  document.getElementById('v-fadeStart').textContent = `${state.fadeStart} %`;
+  document.getElementById('v-fadeEnd').textContent   = `${state.fadeEnd} %`;
+  document.getElementById('v-tiltX').textContent = `${state.tiltX}°`;
+  document.getElementById('v-tiltY').textContent = `${state.tiltY}°`;
+  document.getElementById('v-depth').textContent = `${state.depth}`;
+  document.getElementById('v-posX').textContent  = `${Math.round(state.posX)} %`;
+  document.getElementById('v-posY').textContent  = `${Math.round(state.posY)} %`;
+  document.getElementById('v-posZ').textContent  = `${Math.round(state.posZ)}`;
+  document.getElementById('v-bg').textContent        = state.bg;
+  document.getElementById('v-ink').textContent       = state.ink;
+  document.getElementById('v-grid').textContent    = state.grid === 0 ? 'Off' : state.grid === 1 ? 'Thin' : 'Dense';
+  document.getElementById('v-imgMode').textContent = image ? (state.imgMode === 'background' ? 'Background' : 'Inside slash') : '—';
+  document.getElementById('v-imgOp').textContent   = `${state.imgOp} %`;
+  document.getElementById('v-imgX').textContent  = `${state.imgX} %`;
+  document.getElementById('v-imgY').textContent  = `${state.imgY} %`;
+}
+
+function updateFooter(){
+  document.getElementById('f-angle').textContent  = `${state.angle.toFixed(1)}°`.replace('.0°', '°');
+  document.getElementById('f-weight').textContent = state.weight + ' px';
+  document.getElementById('f-tiltX').textContent = `${state.tiltX}°`;
+  document.getElementById('f-tiltY').textContent = `${state.tiltY}°`;
+  document.getElementById('f-pos').textContent   = `${Math.round(state.posX||0)}%, ${Math.round(state.posY||0)}%`;
+  document.getElementById('f-aspect').textContent = state.aspect;
+}
+
+function wireSlider(id, prop, parser = parseFloat){
+  const el = document.getElementById(id);
+  el.value = state[prop];
+  el.addEventListener('input', () => {
+    state[prop] = parser(el.value);
+    render();
+  });
+}
+
+['angle','weight','length','fadeStart','fadeEnd','tiltX','tiltY','depth','posX','posY','posZ','imgOp','imgX','imgY'].forEach(id => {
+  wireSlider(id, id, id === 'angle' ? parseFloat : (v) => parseInt(v, 10));
+});
+
+/* ── Swatch rows ─────────────────────────────────────────────── */
+function buildSwatches(container, palette, prop){
+  container.innerHTML = '';
+  palette.forEach(sw => {
+    const btn = document.createElement('button');
+    btn.className = 'swatch';
+    btn.style.background = sw.hex;
+    btn.setAttribute('title', `${sw.name} · ${sw.hex}`);
+    btn.dataset.hex = sw.hex;
+    if (state[prop] === sw.hex) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      state[prop] = sw.hex;
+      container.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+    container.appendChild(btn);
+  });
+}
+buildSwatches(document.getElementById('sw-bg'),  PALETTE.ground, 'bg');
+buildSwatches(document.getElementById('sw-ink'), PALETTE.ink,    'ink');
+
+/* ── Toggle groups ──────────────────────────────────────────── */
+function wireToggle(containerId, prop, parser = (v) => v){
+  const container = document.getElementById(containerId);
+  container.querySelectorAll('.toggle-opt').forEach(btn => {
+    if (String(state[prop]) === btn.dataset.val) btn.classList.add('active');
+    else btn.classList.remove('active');
+    btn.addEventListener('click', () => {
+      state[prop] = parser(btn.dataset.val);
+      container.querySelectorAll('.toggle-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (containerId === 'tg-aspect')  document.querySelectorAll('#tg-aspect2 .toggle-opt').forEach(b => b.classList.remove('active'));
+      if (containerId === 'tg-aspect2') document.querySelectorAll('#tg-aspect .toggle-opt').forEach(b => b.classList.remove('active'));
+      render();
+    });
+  });
+}
+wireToggle('tg-grid',    'grid',    (v) => parseInt(v, 10));
+wireToggle('tg-imgMode', 'imgMode');
+wireToggle('tg-aspect',  'aspect');
+wireToggle('tg-aspect2', 'aspect');
+
+/* ── Image upload ───────────────────────────────────────────── */
+document.getElementById('img-upload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    image = { url: reader.result, name: file.name };
+    document.getElementById('img-label').textContent = `◉  ${file.name}`;
+    render();
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('img-clear').addEventListener('click', () => {
+  image = null;
+  document.getElementById('img-upload').value = '';
+  document.getElementById('img-label').textContent = 'Upload · PNG · JPG · SVG';
+  render();
+});
+
+/* ── Drag to reposition slash (X/Y) · scroll for Z ─────────── */
+(function(){
+  const el = svgEl;
+  const drag = { active: false, px: 0, py: 0 };
+
+  el.addEventListener('pointerdown', e => {
+    drag.active = true;
+    drag.px = e.clientX;
+    drag.py = e.clientY;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+  });
+
+  el.addEventListener('pointermove', e => {
+    if (!drag.active) return;
+    const rect = frameEl.getBoundingClientRect();
+    const dx = (e.clientX - drag.px) / rect.width  * 100;
+    const dy = (e.clientY - drag.py) / rect.height * 100;
+    drag.px = e.clientX;
+    drag.py = e.clientY;
+    state.posX = Math.max(-50, Math.min(50, (state.posX || 0) + dx));
+    state.posY = Math.max(-50, Math.min(50, (state.posY || 0) + dy));
+    const pxEl = document.getElementById('posX');
+    const pyEl = document.getElementById('posY');
+    if (pxEl) pxEl.value = Math.round(state.posX);
+    if (pyEl) pyEl.value = Math.round(state.posY);
+    render();
+  });
+
+  const end = () => { drag.active = false; el.classList.remove('dragging'); };
+  el.addEventListener('pointerup',     end);
+  el.addEventListener('pointercancel', end);
+
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    state.posZ = Math.max(-600, Math.min(800, (state.posZ || 0) + e.deltaY * 0.5));
+    const pzEl = document.getElementById('posZ');
+    if (pzEl) pzEl.value = Math.round(state.posZ);
+    render();
+  }, { passive: false });
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   PRESETS
+   ═══════════════════════════════════════════════════════════════ */
+
+function buildPresetThumb(preset){
+  const w = 48, h = 28;
+  const cx = w/2, cy = h/2;
+  const angle = preset.state.angle * Math.PI / 180;
+  const L = h * 1.4, W = Math.max(1.5, preset.state.weight / 32);
+  const corners = [{x:-W/2,y:-L/2},{x:W/2,y:-L/2},{x:W/2,y:L/2},{x:-W/2,y:L/2}];
+  const rot = corners.map(p => ({
+    x: p.x*Math.cos(angle) - p.y*Math.sin(angle) + cx,
+    y: p.x*Math.sin(angle) + p.y*Math.cos(angle) + cy
+  }));
+  const pts = rot.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${preset.state.bg}"/><polygon points="${pts}" fill="${preset.state.ink}"/></svg>`;
+}
+
+const presetContainer = document.getElementById('presets');
+PRESETS.forEach(p => {
+  const row = document.createElement('div');
+  row.className = 'preset';
+  row.innerHTML = `
+    <div class="preset-thumb">${buildPresetThumb(p)}</div>
+    <div class="preset-name">${p.name}</div>
+    <div class="preset-tag">${p.tag}</div>
+  `;
+  row.addEventListener('click', () => {
+    state = { ...state, ...p.state };
+    syncAllInputs();
+    render();
+  });
+  presetContainer.appendChild(row);
+});
+
+function syncAllInputs(){
+  ['angle','weight','length','fadeStart','fadeEnd','tiltX','tiltY','depth','posX','posY','posZ','imgOp','imgX','imgY'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[id] ?? DEFAULT_STATE[id] ?? 0;
+  });
+  buildSwatches(document.getElementById('sw-bg'),  PALETTE.ground, 'bg');
+  buildSwatches(document.getElementById('sw-ink'), PALETTE.ink,    'ink');
+  document.querySelectorAll('#tg-grid .toggle-opt').forEach(b => b.classList.toggle('active', String(state.grid) === b.dataset.val));
+  document.querySelectorAll('#tg-imgMode .toggle-opt').forEach(b => b.classList.toggle('active', state.imgMode === b.dataset.val));
+  document.querySelectorAll('#tg-aspect .toggle-opt').forEach(b => b.classList.toggle('active', state.aspect === b.dataset.val));
+  document.querySelectorAll('#tg-aspect2 .toggle-opt').forEach(b => b.classList.toggle('active', state.aspect === b.dataset.val));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPORT
+   ═══════════════════════════════════════════════════════════════ */
+
+function getExportSVG(){
+  const clone = svgEl.cloneNode(true);
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width', '100%');
+  bg.setAttribute('height', '100%');
+  bg.setAttribute('fill', state.bg);
+  clone.insertBefore(bg, clone.firstChild);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  return new XMLSerializer().serializeToString(clone);
+}
+
+function download(filename, blob){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+document.getElementById('ex-svg').addEventListener('click', () => {
+  const svgText = getExportSVG();
+  download('slash-lab.svg', new Blob([svgText], {type:'image/svg+xml'}));
+});
+
+document.getElementById('ex-png').addEventListener('click', () => {
+  const svgText = getExportSVG();
+  const svgBlob = new Blob([svgText], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const rect = frameEl.getBoundingClientRect();
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.round(rect.width  * scale);
+    canvas.height = Math.round(rect.height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = state.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(blob => download('slash-lab@2x.png', blob), 'image/png');
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = () => {
+    alert('PNG export failed. Try Download SVG instead.');
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+});
+
+document.getElementById('ex-json').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(buildSchema(), null, 2));
+    flash(document.getElementById('ex-json'), 'Copied ✓');
+  } catch {
+    prompt('Copy the state JSON:', JSON.stringify(buildSchema(), null, 2));
+  }
+});
+
+document.getElementById('copy-json').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(buildSchema(), null, 2));
+    flash(document.getElementById('copy-json'), '✓');
+  } catch {}
+});
+
+function flash(el, msg){
+  const old = el.textContent;
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = old; }, 900);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE SCHEMA (AI-readable)
+   ═══════════════════════════════════════════════════════════════ */
+function buildSchema(){
+  return {
+    $schema: "https://code-and-theory.com/ibm/slash-lab/v0.1",
+    signature: "Author Your Future w/ IBM",
+    geometry: {
+      angle_deg:   state.angle,
+      weight_px:   state.weight,
+      length_pct:  state.length
+    },
+    motion: {
+      fade_start_pct: state.fadeStart,
+      fade_end_pct:   state.fadeEnd
+    },
+    perspective: {
+      tilt_x_deg: state.tiltX,
+      tilt_y_deg: state.tiltY,
+      depth:      state.depth
+    },
+    position: {
+      offset_x_pct: state.posX,
+      offset_y_pct: state.posY,
+      offset_z:     state.posZ
+    },
+    palette: { ground: state.bg, ink: state.ink },
+    frame:   { aspect: state.aspect, grid: ["off","thin","dense"][state.grid] },
+    image: image ? {
+      source:   image.name,
+      mode:     state.imgMode,
+      opacity:  state.imgOp / 100,
+      position: { x: state.imgX, y: state.imgY }
+    } : null
+  };
+}
+
+const jsonView = document.getElementById('json-view');
+function updateJSON(){
+  const copyBtn = jsonView.querySelector('.copy-json');
+  const pretty = JSON.stringify(buildSchema(), null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1":</span>')
+    .replace(/: (-?\d+(\.\d+)?)/g, ': <span class="json-num">$1</span>')
+    .replace(/: "([^"]+)"/g, ': <span class="json-str">"$1"</span>');
+  jsonView.innerHTML = pretty;
+  jsonView.prepend(copyBtn);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PERSISTENCE
+   ═══════════════════════════════════════════════════════════════ */
+function saveState(){
+  try { localStorage.setItem('slash-lab-state', JSON.stringify(state)); } catch {}
+}
+function loadState(){
+  try {
+    const raw = localStorage.getItem('slash-lab-state');
+    if (!raw) return null;
+    return { ...DEFAULT_STATE, ...JSON.parse(raw) };
+  } catch { return null; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYBOARD
+   ═══════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches('input,textarea,button')) return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    const keys = Object.keys(ASPECTS);
+    const i = keys.indexOf(state.aspect);
+    state.aspect = keys[(i + 1) % keys.length];
+    syncAllInputs();
+    render();
+  }
+  if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey) {
+    state = { ...DEFAULT_STATE };
+    syncAllInputs();
+    render();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════ */
+window.addEventListener('resize', render);
+syncAllInputs();
+render();
+
+</script>
+</body>
+</html>
