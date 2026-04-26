@@ -832,6 +832,15 @@
         <div id="img-preview" style="margin-top:10px; display:none; border:1px solid var(--rule-hard);">
           <img id="img-preview-el" style="display:block; width:100%; height:auto;" alt=""/>
         </div>
+        <!-- Live status — mic level meter / camera preview / errors -->
+        <div id="src-status" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--rule-hard); background: var(--bg);">
+          <div id="src-status-label" style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px;"></div>
+          <div id="src-meter" style="display:none; height: 8px; background: var(--rule); position: relative; overflow: hidden;">
+            <div id="src-meter-fill" style="height: 100%; width: 0%; background: var(--accent); transition: width 60ms linear;"></div>
+          </div>
+          <video id="src-cam-preview" style="display:none; width: 100%; height: auto; transform: scaleX(-1); border: 1px solid var(--rule);" muted playsinline autoplay></video>
+          <div id="src-error" style="display:none; font-family: var(--mono); font-size: 11px; color: var(--accent); line-height: 1.5;"></div>
+        </div>
         <button class="btn" id="img-clear" style="margin-top:8px; font-size:10px; padding:8px 12px; display:none;">Remove image</button>
         <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; line-height:1.6; padding-top:8px;" id="src-help">
           Pick a source. Everything you feed in becomes a third field — the world made of slashes.
@@ -1239,13 +1248,36 @@ function sampleLuminance(fx, fy){
   return a*(1-tx)*(1-ty) + b*tx*(1-ty) + c*(1-tx)*ty + d*tx*ty;
 }
 
+/* ── Status panel helpers ──────────────────────────────────── */
+function setSrcStatus(kind, label){
+  const wrap = document.getElementById('src-status');
+  const lbl  = document.getElementById('src-status-label');
+  const meter = document.getElementById('src-meter');
+  const camP  = document.getElementById('src-cam-preview');
+  const err   = document.getElementById('src-error');
+  if (kind === 'hide'){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  lbl.textContent = label || '';
+  meter.style.display = (kind === 'mic') ? 'block' : 'none';
+  camP.style.display  = (kind === 'cam') ? 'block' : 'none';
+  err.style.display   = (kind === 'err') ? 'block' : 'none';
+  if (kind === 'err'){ err.textContent = label; lbl.textContent = ''; }
+}
+
 /* ── Microphone — live audio level ─────────────────────────── */
 let mic = { ctx: null, stream: null, analyser: null, buf: null, raf: null };
 let audioLevel = 0;
 async function startMic(){
+  setSrcStatus('mic', '● Requesting microphone…');
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('getUserMedia not supported in this browser.');
+    }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) throw new Error('Web Audio not supported.');
+    const ctx = new Ctx();
+    if (ctx.state === 'suspended') await ctx.resume();
     const src = ctx.createMediaStreamSource(stream);
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
@@ -1253,10 +1285,13 @@ async function startMic(){
     src.connect(analyser);
     mic.ctx = ctx; mic.stream = stream; mic.analyser = analyser;
     mic.buf = new Uint8Array(analyser.frequencyBinCount);
+    setSrcStatus('mic', '● Microphone live · level');
     micTick();
   } catch (err) {
-    alert('Microphone access was denied or is unavailable.\n\n' + (err && err.message || err));
-    // Revert source to off so the dropdown reflects reality
+    const msg = (err && err.name === 'NotAllowedError')
+      ? '✕ Microphone permission denied. Allow it in your browser bar, then re-select Microphone.'
+      : '✕ Microphone unavailable: ' + (err && err.message || err);
+    setSrcStatus('err', msg);
     state.source = 'off';
     document.getElementById('source').value = 'off';
     updateSrcHint();
@@ -1268,8 +1303,10 @@ function micTick(){
   let sum = 0;
   for (let i = 0; i < mic.buf.length; i++) sum += mic.buf[i];
   const raw = (sum / mic.buf.length) / 255;
-  // Gentle attack/release smoothing beyond the analyser's own
   audioLevel = audioLevel * 0.6 + raw * 0.4;
+  // Update visible meter
+  const fill = document.getElementById('src-meter-fill');
+  if (fill) fill.style.width = Math.min(100, Math.round(audioLevel * 200)) + '%';
   render();
   mic.raf = requestAnimationFrame(micTick);
 }
@@ -1279,15 +1316,27 @@ function stopMic(){
   if (mic.ctx && mic.ctx.state !== 'closed') mic.ctx.close();
   mic = { ctx:null, stream:null, analyser:null, buf:null, raf:null };
   audioLevel = 0;
+  setSrcStatus('hide');
 }
 
 /* ── Camera — live video into luminance buffer ────────────── */
 let cam = { stream: null, video: null, canvas: null, ctx: null, raf: null };
 async function startCamera(){
+  setSrcStatus('cam', '● Requesting camera…');
   try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('getUserMedia not supported in this browser.');
+    }
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
     });
+    // Bind to the visible preview <video> in the panel as well, so the user sees themselves.
+    const previewVideo = document.getElementById('src-cam-preview');
+    if (previewVideo){
+      previewVideo.srcObject = stream;
+      try { await previewVideo.play(); } catch {}
+    }
+    // Hidden working video (sampled into the luminance buffer)
     const video = document.createElement('video');
     video.srcObject = stream;
     video.autoplay = true;
@@ -1296,9 +1345,13 @@ async function startCamera(){
     await video.play();
     const canvas = document.createElement('canvas');
     cam.stream = stream; cam.video = video; cam.canvas = canvas; cam.ctx = canvas.getContext('2d');
+    setSrcStatus('cam', '● Camera live');
     camTick();
   } catch (err) {
-    alert('Camera access was denied or is unavailable.\n\n' + (err && err.message || err));
+    const msg = (err && err.name === 'NotAllowedError')
+      ? '✕ Camera permission denied. Allow it in your browser bar, then re-select Camera.'
+      : '✕ Camera unavailable: ' + (err && err.message || err);
+    setSrcStatus('err', msg);
     state.source = 'off';
     document.getElementById('source').value = 'off';
     updateSrcHint();
@@ -1329,7 +1382,10 @@ function camTick(){
 function stopCamera(){
   if (cam.raf) cancelAnimationFrame(cam.raf);
   if (cam.stream) cam.stream.getTracks().forEach(t => t.stop());
+  const previewVideo = document.getElementById('src-cam-preview');
+  if (previewVideo){ previewVideo.srcObject = null; }
   cam = { stream:null, video:null, canvas:null, ctx:null, raf:null };
+  setSrcStatus('hide');
 }
 
 function updateSrcHint(){
@@ -1829,6 +1885,8 @@ function applySource(next){
   }
   state.source = next;
   updateSrcHint();
+  // Hide live status panel when leaving mic/camera modes
+  if (next !== 'mic' && next !== 'camera'){ setSrcStatus('hide'); }
   // Toggle image upload UI visibility
   document.getElementById('img-upload-btn').style.display = (next === 'image') ? 'block' : 'none';
   const prev_el = document.getElementById('img-preview');
