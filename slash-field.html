@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Slash Field · 1 + 1 = 3 · Author Your Future w/ IBM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --ink: #161616;
+    --ink-soft: #525252;
+    --ink-mute: #8d8d8d;
+    --rule: #e5e5e5;
+    --rule-hard: #c6c6c6;
+    --accent: #0f62fe;
+    --accent-soft: #e8efff;
+    --grid-dot: #d0d0d0;
+    --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.4;
+    overflow: hidden;
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    grid-template-rows: 56px 1fr 48px;
+    grid-template-areas:
+      "head head head"
+      "left stage right"
+      "foot foot foot";
+    height: 100vh;
+  }
+  .head { grid-area: head; border-bottom: 1px solid var(--rule); }
+  .left { grid-area: left; border-right: 1px solid var(--rule); overflow-y: auto; background: var(--surface); }
+  .stage { grid-area: stage; position: relative; overflow: hidden; }
+  .right { grid-area: right; border-left: 1px solid var(--rule); overflow-y: auto; background: var(--surface); }
+  .foot { grid-area: foot; border-top: 1px solid var(--rule); }
+
+  /* ── Head ───────────────────────────────────────────────────── */
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: var(--surface);
+  }
+  .head-mark { display: flex; align-items: baseline; gap: 16px; }
+  .logo { font-family: var(--sans); font-weight: 700; font-size: 18px; letter-spacing: 0.02em; color: var(--ink); }
+  .divider { width: 1px; height: 20px; background: var(--rule-hard); }
+  .tool-name { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); }
+  .tool-sub { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); }
+  .head-meta { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute); display: flex; gap: 20px; }
+  .head-meta span.live::before {
+    content: ""; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 1px;
+  }
+  .equation {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .equation b { color: var(--accent); font-weight: 500; }
+
+  /* ── Rail sections ──────────────────────────────────────────── */
+  .section { border-bottom: 1px solid var(--rule); }
+  .section:last-child { border-bottom: none; }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 14px 24px 10px 24px;
+  }
+  .section-num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; }
+  .section-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ink); text-transform: uppercase; }
+  .section-hint { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); }
+  .section-body { padding: 4px 24px 16px 24px; }
+
+  /* The 1+1=3 section gets a subtle accent border */
+  .section.accent { background: linear-gradient(to right, var(--accent-soft) 0, transparent 4px); }
+  .section.accent .section-num { color: var(--accent); }
+  .section-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid var(--accent);
+    margin-top: 8px;
+  }
+
+  /* ── Collapsible sections ───────────────────────────────────── */
+  .section.collapsible > .section-head { cursor: pointer; user-select: none; }
+  .section.collapsible > .section-head::after {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-right: 1.5px solid var(--ink-mute);
+    border-bottom: 1.5px solid var(--ink-mute);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 200ms ease;
+    flex-shrink: 0;
+  }
+  .section.collapsible.collapsed > .section-head::after { transform: rotate(-45deg) translateY(1px); }
+  .section.collapsible > .section-body {
+    display: grid; grid-template-rows: 1fr;
+    transition: grid-template-rows 220ms ease;
+    overflow: hidden;
+  }
+  .section.collapsible.collapsed > .section-body { grid-template-rows: 0fr; }
+  .section.collapsible > .section-body > .section-body-inner { overflow: hidden; min-height: 0; }
+
+  /* ── Control row ────────────────────────────────────────────── */
+  .ctl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 2px 12px;
+    padding: 10px 0;
+  }
+  .ctl-label { font-family: var(--sans); font-weight: 400; font-size: 12px; color: var(--ink); letter-spacing: 0.01em; }
+  .ctl-value { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  .ctl-slider { grid-column: 1 / -1; margin-top: 6px; }
+  .ctl-full { grid-column: 1 / -1; margin-top: 6px; }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; background: transparent; height: 20px;
+    cursor: ew-resize; margin: 0;
+  }
+  input[type="range"]:focus { outline: none; }
+  input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--rule-hard); border-radius: 0; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 2px; height: 14px; background: var(--ink);
+    border-radius: 0; margin-top: -6.5px;
+    transition: background 120ms, transform 120ms;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { background: var(--accent); transform: scaleY(1.15); }
+  input[type="range"]:focus::-webkit-slider-thumb { background: var(--accent); }
+  input[type="range"]::-moz-range-track { height: 1px; background: var(--rule-hard); border: none; }
+  input[type="range"]::-moz-range-thumb { width: 2px; height: 14px; background: var(--ink); border: none; border-radius: 0; cursor: ew-resize; }
+  input[type="range"]:hover::-moz-range-thumb, input[type="range"]:focus::-moz-range-thumb { background: var(--accent); }
+
+  /* Select — native, styled flat */
+  select.sel {
+    -webkit-appearance: none; appearance: none;
+    width: 100%;
+    padding: 6px 26px 6px 10px;
+    background: transparent;
+    border: 1px solid var(--rule-hard);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border-radius: 0;
+    cursor: pointer;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--ink-mute) 50%),
+      linear-gradient(135deg, var(--ink-mute) 50%, transparent 50%);
+    background-position:
+      calc(100% - 14px) 50%,
+      calc(100% - 9px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  select.sel:focus { outline: none; border-color: var(--accent); }
+  select.sel:hover { border-color: var(--ink); }
+
+  /* ── Swatches ───────────────────────────────────────────────── */
+  .swatch-row { display: flex; gap: 4px; padding: 4px 0 2px 0; }
+  .swatch {
+    width: 24px; height: 24px;
+    cursor: pointer;
+    border: 1px solid var(--rule-hard);
+    transition: transform 120ms;
+    position: relative;
+  }
+  .swatch.active::after {
+    content: ""; position: absolute; inset: -4px;
+    border: 1px solid var(--accent); pointer-events: none;
+  }
+  .swatch:hover { transform: translateY(-1px); }
+
+  /* ── Toggle ─────────────────────────────────────────────────── */
+  .toggle-group { display: flex; border: 1px solid var(--rule-hard); width: 100%; }
+  .toggle-opt {
+    flex: 1; padding: 6px 8px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft);
+    background: transparent; border: none;
+    cursor: pointer; text-align: center;
+    border-right: 1px solid var(--rule-hard);
+    transition: background 120ms, color 120ms;
+  }
+  .toggle-opt:last-child { border-right: none; }
+  .toggle-opt.active { background: var(--ink); color: var(--bg); }
+  .toggle-opt:hover:not(.active) { background: var(--bg); color: var(--ink); }
+
+  /* ── Buttons ────────────────────────────────────────────────── */
+  .btn {
+    display: block; width: 100%;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+    transition: background 120ms, color 120ms;
+  }
+  .btn + .btn { margin-top: 6px; }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  .btn-arrow::after { content: "  →"; float: right; font-family: var(--mono); }
+  .btn.btn-playing { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  .btn.btn-playing:hover { background: var(--ink); border-color: var(--ink); }
+
+  /* Simple · Advanced toggle ─────────────────────────────────── */
+  .adv-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--rule-hard);
+    background: transparent;
+    color: var(--ink);
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 120ms, color 120ms;
+  }
+  .adv-toggle:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  body:not(.advanced) .advanced-only { display: none !important; }
+  body.advanced .simple-only { display: none !important; }
+
+  /* ── Preset list ────────────────────────────────────────────── */
+  .preset {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    cursor: pointer;
+    border-top: 1px solid var(--rule);
+  }
+  .preset:first-child { border-top: none; }
+  .preset:hover { background: var(--bg); margin: 0 -24px; padding-left: 24px; padding-right: 24px; }
+  .preset-thumb {
+    width: 56px; height: 36px;
+    border: 1px solid var(--rule-hard);
+    position: relative; overflow: hidden; flex-shrink: 0;
+  }
+  .preset-thumb svg { display: block; width: 100%; height: 100%; }
+  .preset-name { font-family: var(--sans); font-size: 12px; color: var(--ink); }
+  .preset-tag { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); letter-spacing: 0.06em; }
+
+  /* ── JSON panel ─────────────────────────────────────────────── */
+  .json-panel {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--bg);
+    padding: 12px 16px;
+    max-height: 260px;
+    overflow-y: auto;
+    white-space: pre;
+    border: 1px solid var(--rule-hard);
+    position: relative;
+  }
+  .json-key { color: var(--ink-soft); }
+  .json-num { color: var(--accent); }
+  .json-str { color: var(--ink); }
+  .copy-json {
+    position: absolute; top: 8px; right: 8px;
+    padding: 3px 7px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--surface);
+    border: 1px solid var(--rule-hard);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .copy-json:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* ── Stage ──────────────────────────────────────────────────── */
+  .stage {
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+    background: var(--bg);
+  }
+  .stage-grid-bg {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .frame {
+    position: relative;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--rule-hard);
+    overflow: hidden;
+    transition: width 200ms ease-out, height 200ms ease-out, background 200ms;
+  }
+  .frame svg.field-svg {
+    display: block; position: absolute; inset: 0;
+    width: 100%; height: 100%; z-index: 2;
+    cursor: grab;
+    touch-action: none;
+  }
+  .frame svg.field-svg.dragging { cursor: grabbing; }
+  .frame svg.field-svg:active { cursor: grabbing; }
+  .frame-ticks {
+    position: absolute;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+    color: var(--ink-mute); text-transform: uppercase;
+    pointer-events: none;
+    z-index: 4;
+  }
+  .tick-tl { top: 10px; left: 12px; }
+  .tick-tr { top: 10px; right: 12px; }
+  .tick-bl { bottom: 10px; left: 12px; }
+  .tick-br { bottom: 10px; right: 12px; }
+
+  .frame-brackets { position: absolute; inset: -1px; pointer-events: none; z-index: 5; }
+  .frame-brackets svg { width: 100%; height: 100%; display: block; }
+
+  /* ── Foot ───────────────────────────────────────────────────── */
+  .foot {
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .foot-readout { display: flex; gap: 24px; }
+  .foot-readout span strong { color: var(--ink); font-weight: 500; }
+  .foot-credit { color: var(--ink-mute); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--rule-hard); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-mute); }
+
+  .focus-ring:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 260px 1fr 280px; }
+  }
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: 56px 40vh 1fr 40px;
+      grid-template-areas: "head" "stage" "left" "foot";
+    }
+    .right { display: none; }
+    .left { border-right: none; border-top: 1px solid var(--rule); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══ HEADER ════════════════════════════════════════════════ -->
+  <header class="head">
+    <div class="head-mark">
+      <div class="logo">IBM</div>
+      <div class="divider"></div>
+      <div>
+        <div class="tool-name">Slash Field</div>
+        <div class="tool-sub">1 + 1 = 3 · Author Your Future w/ IBM · v0.1</div>
+      </div>
+    </div>
+    <div class="head-meta">
+      <span class="equation">A <b>⊕</b> B <b>=</b> C</span>
+      <button class="adv-toggle" id="adv-toggle">Advanced</button>
+      <span class="live">Live</span>
+    </div>
+  </header>
+
+  <!-- ═══ LEFT RAIL — CONTROLS ═════════════════════════════════ -->
+  <aside class="left" id="left-rail">
+
+    <!-- 01 · Grid -->
+    <div class="section" data-sec="grid">
+      <div class="section-head">
+        <div><span class="section-num">01</span> <span class="section-title">Grid</span></div>
+        <span class="section-hint">cells</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Columns</div>
+          <div class="ctl-value" id="v-cols">32</div>
+          <div class="ctl-slider"><input type="range" id="cols" class="focus-ring" min="2" max="120" step="1" value="32"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Rows</div>
+          <div class="ctl-value" id="v-rows">18</div>
+          <div class="ctl-slider"><input type="range" id="rows" class="focus-ring" min="2" max="120" step="1" value="18"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Cell padding</div>
+          <div class="ctl-value" id="v-pad">20 %</div>
+          <div class="ctl-slider"><input type="range" id="pad" class="focus-ring" min="0" max="80" step="1" value="20"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Zoom — crop stage</div>
+          <div class="ctl-value" id="v-zoom">1.00×</div>
+          <div class="ctl-slider"><input type="range" id="zoom" class="focus-ring" min="0.3" max="4" step="0.05" value="1.0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Seed</div>
+          <div class="ctl-value" id="v-seed">1972</div>
+          <div class="ctl-slider"><input type="range" id="seed" class="focus-ring" min="0" max="9999" step="1" value="1972"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 · Unit -->
+    <div class="section" data-sec="unit">
+      <div class="section-head">
+        <div><span class="section-num">02</span> <span class="section-title">Unit · Base Slash</span></div>
+        <span class="section-hint">°·px·%</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Angle — off vertical</div>
+          <div class="ctl-value" id="v-angle">15°</div>
+          <div class="ctl-slider"><input type="range" id="angle" class="focus-ring" min="-90" max="90" step="1" value="15"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Length</div>
+          <div class="ctl-value" id="v-length">90 %</div>
+          <div class="ctl-slider"><input type="range" id="length" class="focus-ring" min="10" max="400" step="1" value="90"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Weight</div>
+          <div class="ctl-value" id="v-weight">2 px</div>
+          <div class="ctl-slider"><input type="range" id="weight" class="focus-ring" min="1" max="60" step="1" value="2"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Shape — side view of</div>
+          <div class="ctl-full">
+            <select class="sel" id="shape">
+              <option value="line">Line · the slash</option>
+              <option value="rect">Rectangle · slab</option>
+              <option value="square">Square</option>
+              <option value="circle">Circle · disc</option>
+              <option value="ellipse">Ellipse</option>
+              <option value="triangle">Triangle · arrow</option>
+              <option value="diamond">Diamond</option>
+              <option value="plus">Plus · cross</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Thickness — depth</div>
+          <div class="ctl-value" id="v-thick">0.25</div>
+          <div class="ctl-slider"><input type="range" id="thick" class="focus-ring" min="0.02" max="1" step="0.01" value="0.25"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Cap (line only)</div>
+          <div class="ctl-slider">
+            <div class="toggle-group" id="tg-cap">
+              <button class="toggle-opt active" data-val="butt">Butt</button>
+              <button class="toggle-opt" data-val="round">Round</button>
+              <button class="toggle-opt" data-val="square">Square</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; line-height:1.6; padding-top:6px;">
+          Edge-on the shape reads as a slash. Tilt the stage to reveal the form.
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 · Field A -->
+    <div class="section" data-sec="fieldA">
+      <div class="section-head">
+        <div><span class="section-num">03</span> <span class="section-title">Field A</span></div>
+        <span class="section-hint">first</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Type</div>
+          <div class="ctl-full">
+            <select class="sel" id="fA_type">
+              <option value="sine">Sine · wave</option>
+              <option value="radial">Radial · rings</option>
+              <option value="linear">Linear · gradient</option>
+              <option value="noise">Noise · organic</option>
+              <option value="vortex">Vortex · swirl</option>
+              <option value="flow">Flow · curl</option>
+              <option value="checker">Checker · alternate</option>
+              <option value="point">Point · distance</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Drives</div>
+          <div class="ctl-full">
+            <select class="sel" id="fA_drive">
+              <option value="angle">Angle</option>
+              <option value="length">Length</option>
+              <option value="weight">Weight</option>
+              <option value="opacity">Opacity</option>
+              <option value="offsetX">Offset · X</option>
+              <option value="offsetY">Offset · Y</option>
+              <option value="scale">Scale</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Frequency</div>
+          <div class="ctl-value" id="v-fA_freq">3.0</div>
+          <div class="ctl-slider"><input type="range" id="fA_freq" class="focus-ring" min="0.1" max="20" step="0.1" value="3.0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Amplitude</div>
+          <div class="ctl-value" id="v-fA_amp">1.00</div>
+          <div class="ctl-slider"><input type="range" id="fA_amp" class="focus-ring" min="0" max="2" step="0.01" value="1.00"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Phase</div>
+          <div class="ctl-value" id="v-fA_phase">0°</div>
+          <div class="ctl-slider"><input type="range" id="fA_phase" class="focus-ring" min="0" max="360" step="1" value="0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Rotation</div>
+          <div class="ctl-value" id="v-fA_rot">0°</div>
+          <div class="ctl-slider"><input type="range" id="fA_rot" class="focus-ring" min="-180" max="180" step="1" value="0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Origin X</div>
+          <div class="ctl-value" id="v-fA_ox">50 %</div>
+          <div class="ctl-slider"><input type="range" id="fA_ox" class="focus-ring" min="-50" max="150" step="1" value="50"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Origin Y</div>
+          <div class="ctl-value" id="v-fA_oy">50 %</div>
+          <div class="ctl-slider"><input type="range" id="fA_oy" class="focus-ring" min="-50" max="150" step="1" value="50"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 · Field B -->
+    <div class="section" data-sec="fieldB">
+      <div class="section-head">
+        <div><span class="section-num">04</span> <span class="section-title">Field B</span></div>
+        <span class="section-hint">second</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Type</div>
+          <div class="ctl-full">
+            <select class="sel" id="fB_type">
+              <option value="sine">Sine · wave</option>
+              <option value="radial" selected>Radial · rings</option>
+              <option value="linear">Linear · gradient</option>
+              <option value="noise">Noise · organic</option>
+              <option value="vortex">Vortex · swirl</option>
+              <option value="flow">Flow · curl</option>
+              <option value="checker">Checker · alternate</option>
+              <option value="point">Point · distance</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Drives</div>
+          <div class="ctl-full">
+            <select class="sel" id="fB_drive">
+              <option value="angle" selected>Angle</option>
+              <option value="length">Length</option>
+              <option value="weight">Weight</option>
+              <option value="opacity">Opacity</option>
+              <option value="offsetX">Offset · X</option>
+              <option value="offsetY">Offset · Y</option>
+              <option value="scale">Scale</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Frequency</div>
+          <div class="ctl-value" id="v-fB_freq">2.0</div>
+          <div class="ctl-slider"><input type="range" id="fB_freq" class="focus-ring" min="0.1" max="20" step="0.1" value="2.0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Amplitude</div>
+          <div class="ctl-value" id="v-fB_amp">1.00</div>
+          <div class="ctl-slider"><input type="range" id="fB_amp" class="focus-ring" min="0" max="2" step="0.01" value="1.00"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Phase</div>
+          <div class="ctl-value" id="v-fB_phase">0°</div>
+          <div class="ctl-slider"><input type="range" id="fB_phase" class="focus-ring" min="0" max="360" step="1" value="0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Rotation</div>
+          <div class="ctl-value" id="v-fB_rot">90°</div>
+          <div class="ctl-slider"><input type="range" id="fB_rot" class="focus-ring" min="-180" max="180" step="1" value="90"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Origin X</div>
+          <div class="ctl-value" id="v-fB_ox">50 %</div>
+          <div class="ctl-slider"><input type="range" id="fB_ox" class="focus-ring" min="-50" max="150" step="1" value="50"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Origin Y</div>
+          <div class="ctl-value" id="v-fB_oy">50 %</div>
+          <div class="ctl-slider"><input type="range" id="fB_oy" class="focus-ring" min="-50" max="150" step="1" value="50"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 · Combine — the 1+1=3 moment -->
+    <div class="section accent" data-sec="combine">
+      <div class="section-head">
+        <div><span class="section-num">05</span> <span class="section-title">Combine · 1 + 1 = 3</span></div>
+        <span class="section-hint">third</span>
+      </div>
+      <div class="section-body">
+        <div style="font-family:var(--sans); font-size:11px; color:var(--ink-soft); line-height:1.55; padding: 0 0 8px 0;">
+          Two fields · one operation · a third pattern. Neither field alone would produce this.
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Blend</div>
+          <div class="ctl-full">
+            <select class="sel" id="blend">
+              <option value="add">Add · A + B</option>
+              <option value="multiply">Multiply · A × B</option>
+              <option value="difference">Difference · |A − B|</option>
+              <option value="min">Min · darken</option>
+              <option value="max">Max · lighten</option>
+              <option value="mod">Modulate · A mod B</option>
+              <option value="xor">XOR · threshold</option>
+              <option value="avg">Average · (A+B)/2</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Weight A</div>
+          <div class="ctl-value" id="v-wA">0.50</div>
+          <div class="ctl-slider"><input type="range" id="wA" class="focus-ring" min="0" max="1" step="0.01" value="0.50"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Weight B</div>
+          <div class="ctl-value" id="v-wB">0.50</div>
+          <div class="ctl-slider"><input type="range" id="wB" class="focus-ring" min="0" max="1" step="0.01" value="0.50"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Bias</div>
+          <div class="ctl-value" id="v-bias">0.00</div>
+          <div class="ctl-slider"><input type="range" id="bias" class="focus-ring" min="-1" max="1" step="0.01" value="0.00"></div>
+        </div>
+        <span class="section-tag">Only with IBM</span>
+      </div>
+    </div>
+
+    <!-- 06 · Motion — animate phase & more -->
+    <div class="section" data-sec="motion">
+      <div class="section-head">
+        <div><span class="section-num">06</span> <span class="section-title">Motion · Play</span></div>
+        <span class="section-hint">animate</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-arrow" id="play-btn" style="margin-bottom:10px;">▶  Play</button>
+        <div class="ctl">
+          <div class="ctl-label">Animate</div>
+          <div class="ctl-full">
+            <select class="sel" id="animTarget">
+              <option value="phase">Phase · A &amp; B</option>
+              <option value="phaseA">Phase · A only</option>
+              <option value="phaseB">Phase · B only</option>
+              <option value="rotation">Rotation · A &amp; B</option>
+              <option value="origin">Origin drift</option>
+              <option value="bias">Bias sweep</option>
+              <option value="seed">Seed scramble</option>
+              <option value="camOrbit">Camera · orbit Z</option>
+              <option value="dolly">Dolly · fly through</option>
+              <option value="zWave">Z wave · pulse</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Speed A</div>
+          <div class="ctl-value" id="v-spA">1.0×</div>
+          <div class="ctl-slider"><input type="range" id="spA" class="focus-ring" min="-4" max="4" step="0.1" value="1.0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Speed B</div>
+          <div class="ctl-value" id="v-spB">-0.6×</div>
+          <div class="ctl-slider"><input type="range" id="spB" class="focus-ring" min="-4" max="4" step="0.1" value="-0.6"></div>
+        </div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; line-height:1.6; padding-top:6px;">
+          Opposing speeds = beats and interference. Same speed = a field in parallax.
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 · Depth -->
+    <div class="section" data-sec="depth">
+      <div class="section-head">
+        <div><span class="section-num">07</span> <span class="section-title">Depth · Perspective</span></div>
+        <span class="section-hint">3D</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl">
+          <div class="ctl-label">Tilt X — forward</div>
+          <div class="ctl-value" id="v-tiltX">0°</div>
+          <div class="ctl-slider"><input type="range" id="tiltX" class="focus-ring" min="-60" max="60" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Tilt Y — sideways</div>
+          <div class="ctl-value" id="v-tiltY">0°</div>
+          <div class="ctl-slider"><input type="range" id="tiltY" class="focus-ring" min="-60" max="60" step="1" value="0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Vanishing depth</div>
+          <div class="ctl-value" id="v-vanish">1600</div>
+          <div class="ctl-slider"><input type="range" id="vanish" class="focus-ring" min="400" max="4000" step="50" value="1600"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Parallax strength</div>
+          <div class="ctl-value" id="v-parallax">0 %</div>
+          <div class="ctl-slider"><input type="range" id="parallax" class="focus-ring" min="0" max="100" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Z wave — cell depth</div>
+          <div class="ctl-value" id="v-zWave">0</div>
+          <div class="ctl-slider"><input type="range" id="zWave" class="focus-ring" min="0" max="600" step="5" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Camera Z · dolly</div>
+          <div class="ctl-value" id="v-camZ">0</div>
+          <div class="ctl-slider"><input type="range" id="camZ" class="focus-ring" min="-800" max="800" step="10" value="0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Atmospheric fade</div>
+          <div class="ctl-value" id="v-atmos">0 %</div>
+          <div class="ctl-slider"><input type="range" id="atmos" class="focus-ring" min="0" max="100" step="1" value="0"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Shadow offset</div>
+          <div class="ctl-value" id="v-shadow">0 px</div>
+          <div class="ctl-slider"><input type="range" id="shadow" class="focus-ring" min="0" max="20" step="1" value="0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 · Input · Source -->
+    <div class="section" data-sec="image">
+      <div class="section-head">
+        <div><span class="section-num">08</span> <span class="section-title">Input · Source</span></div>
+        <span class="section-hint" id="src-hint">off</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl" style="padding-top:2px;">
+          <div class="ctl-label">Reactive source</div>
+          <div class="ctl-full">
+            <select class="sel" id="source">
+              <option value="off">Off · static scene</option>
+              <option value="image">Image · upload</option>
+              <option value="mic">Microphone · live sound</option>
+              <option value="camera">Camera · live video</option>
+            </select>
+          </div>
+        </div>
+        <label class="btn" style="display:none; margin-top:10px;" id="img-upload-btn">
+          <span id="img-label">Upload · PNG · JPG · SVG</span>
+          <input type="file" id="img-upload" accept="image/*" style="display:none;">
+        </label>
+        <div class="ctl" style="padding-top:10px;">
+          <div class="ctl-label">Drives</div>
+          <div class="ctl-full">
+            <select class="sel" id="imgDrive">
+              <option value="off">Off · no effect</option>
+              <option value="weight">Weight · thicker when active</option>
+              <option value="length">Length · longer when active</option>
+              <option value="opacity">Opacity · visible when active</option>
+              <option value="scale">Scale · bigger when active</option>
+              <option value="jitter">Angle jitter · scramble</option>
+            </select>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Strength</div>
+          <div class="ctl-value" id="v-imgStr">80 %</div>
+          <div class="ctl-slider"><input type="range" id="imgStr" class="focus-ring" min="0" max="100" step="1" value="80"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Contrast</div>
+          <div class="ctl-value" id="v-imgCon">1.00</div>
+          <div class="ctl-slider"><input type="range" id="imgCon" class="focus-ring" min="0.2" max="4" step="0.05" value="1.0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Invert</div>
+          <div class="ctl-slider">
+            <div class="toggle-group" id="tg-imgInv">
+              <button class="toggle-opt active" data-val="0">Dark / Loud = active</button>
+              <button class="toggle-opt" data-val="1">Light / Quiet = active</button>
+            </div>
+          </div>
+        </div>
+        <div id="img-preview" style="margin-top:10px; display:none; border:1px solid var(--rule-hard);">
+          <img id="img-preview-el" style="display:block; width:100%; height:auto;" alt=""/>
+        </div>
+        <button class="btn" id="img-clear" style="margin-top:8px; font-size:10px; padding:8px 12px; display:none;">Remove image</button>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; line-height:1.6; padding-top:8px;" id="src-help">
+          Pick a source. Everything you feed in becomes a third field — the world made of slashes.
+        </div>
+      </div>
+    </div>
+
+    <!-- 09 · Ground & Ink -->
+    <div class="section" data-sec="ground">
+      <div class="section-head">
+        <div><span class="section-num">09</span> <span class="section-title">Ground &amp; Ink</span></div>
+        <span class="section-hint">Carbon</span>
+      </div>
+      <div class="section-body">
+        <div class="ctl" style="padding-bottom:4px;">
+          <div class="ctl-label">Ground</div>
+          <div class="ctl-value" id="v-bg">#fafafa</div>
+          <div class="swatch-row" id="sw-bg" style="grid-column:1/-1;"></div>
+        </div>
+        <div class="ctl" style="padding-bottom:4px;">
+          <div class="ctl-label">Ink — the slash</div>
+          <div class="ctl-value" id="v-ink">#161616</div>
+          <div class="swatch-row" id="sw-ink" style="grid-column:1/-1;"></div>
+        </div>
+        <div class="ctl advanced-only">
+          <div class="ctl-label">Vignette</div>
+          <div class="ctl-value" id="v-vig">0 %</div>
+          <div class="ctl-slider"><input type="range" id="vig" class="focus-ring" min="0" max="100" step="1" value="0"></div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Aspect</div>
+          <div class="ctl-full">
+            <div class="toggle-group" id="tg-aspect" style="margin-bottom:6px;">
+              <button class="toggle-opt" data-val="1:1">1:1</button>
+              <button class="toggle-opt active" data-val="16:9">16:9</button>
+              <button class="toggle-opt" data-val="9:16">9:16</button>
+              <button class="toggle-opt" data-val="4:3">4:3</button>
+              <button class="toggle-opt" data-val="3:4">3:4</button>
+            </div>
+            <div class="toggle-group advanced-only" id="tg-aspect2">
+              <button class="toggle-opt" data-val="2:1">2:1 OOH</button>
+              <button class="toggle-opt" data-val="5:2">5:2 Transit</button>
+              <button class="toggle-opt" data-val="1:3">1:3 Skyscraper</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ═══ STAGE ══════════════════════════════════════════════════ -->
+  <main class="stage">
+    <div class="stage-grid-bg"></div>
+    <div class="frame" id="frame">
+      <svg class="field-svg" id="field-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="frame-brackets">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M 0 10 L 0 0 L 10 0" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+          <path d="M 90 0 L 100 0 L 100 10" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+          <path d="M 100 90 L 100 100 L 90 100" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+          <path d="M 10 100 L 0 100 L 0 90" fill="none" stroke="#161616" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+      <div class="frame-ticks tick-tl" id="tick-spec">16:9</div>
+      <div class="frame-ticks tick-tr" id="tick-dim">0 × 0</div>
+      <div class="frame-ticks tick-bl">Drag · orbit &nbsp; ·&nbsp; Scroll · dolly</div>
+      <div class="frame-ticks tick-br" id="tick-count">0 cells</div>
+    </div>
+  </main>
+
+  <!-- ═══ RIGHT RAIL — PRESETS · EXPORT · STATE ═══════════════════ -->
+  <aside class="right">
+
+    <div class="section">
+      <div class="section-head">
+        <div><span class="section-num">10</span> <span class="section-title">Presets</span></div>
+        <span class="section-hint">signatures</span>
+      </div>
+      <div class="section-body" id="presets"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div><span class="section-num">11</span> <span class="section-title">Export</span></div>
+        <span class="section-hint">asset</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-arrow" id="ex-svg">Download SVG</button>
+        <button class="btn btn-arrow" id="ex-png">Download PNG · 2×</button>
+        <button class="btn btn-arrow" id="ex-json">Copy JSON state</button>
+      </div>
+    </div>
+
+    <div class="section advanced-only">
+      <div class="section-head">
+        <div><span class="section-num">12</span> <span class="section-title">State · AI Schema</span></div>
+        <span class="section-hint">read-only</span>
+      </div>
+      <div class="section-body">
+        <div class="json-panel" id="json-view"><button class="copy-json" id="copy-json">Copy</button></div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-mute); letter-spacing:0.04em; margin-top:10px; line-height:1.6;">
+          The third pattern, fully described. Every field named, ranged, serialisable.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head" style="padding-bottom:14px;">
+        <div><span class="section-num">13</span> <span class="section-title">Principles</span></div>
+      </div>
+      <div class="section-body" style="padding-top:0;">
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); letter-spacing:0.04em; line-height:1.7;">
+          <div style="display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--rule);"><span style="color:var(--ink-mute); width:20px;">01</span><span>One primitive. The slash, repeated.</span></div>
+          <div style="display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--rule);"><span style="color:var(--ink-mute); width:20px;">02</span><span>Two fields. A pair, each with purpose.</span></div>
+          <div style="display:flex; gap:10px; padding:4px 0; border-bottom:1px solid var(--rule);"><span style="color:var(--ink-mute); width:20px;">03</span><span>A third pattern. Emergent, only together.</span></div>
+          <div style="display:flex; gap:10px; padding:4px 0;"><span style="color:var(--ink-mute); width:20px;">04</span><span>Only with IBM. The math of partnership.</span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ FOOT ════════════════════════════════════════════════════ -->
+  <footer class="foot">
+    <div class="foot-readout">
+      <span>Grid <strong id="f-grid">32 × 18</strong></span>
+      <span>A <strong id="f-fA">sine</strong></span>
+      <span>B <strong id="f-fB">radial</strong></span>
+      <span>⊕ <strong id="f-blend">add</strong></span>
+      <span>Tilt <strong id="f-tilt">0°, 0°</strong></span>
+      <span>Aspect <strong id="f-aspect">16:9</strong></span>
+    </div>
+    <div class="foot-credit">A ⊕ B = C · Two make a third</div>
+  </footer>
+</div>
+
+
+<script>
+/* ═════════════════════════════════════════════════════════════════
+   SLASH FIELD · v0.1
+   A grid of slashes modulated by two composable fields.
+   The third pattern — emergent from the pair.
+   ─────────────────────────────────────────────────────────────── */
+
+/* ── Carbon palette ─────────────────────────────────────────── */
+const PALETTE = {
+  ground: [
+    {name:"White",    hex:"#ffffff"},
+    {name:"Gray 10",  hex:"#f4f4f4"},
+    {name:"Gray 30",  hex:"#c6c6c6"},
+    {name:"Gray 70",  hex:"#525252"},
+    {name:"Gray 100", hex:"#161616"},
+    {name:"Blue 60",  hex:"#0f62fe"},
+    {name:"Blue 80",  hex:"#002d9c"},
+    {name:"Off-white",hex:"#fafafa"}
+  ],
+  ink: [
+    {name:"Gray 100", hex:"#161616"},
+    {name:"Gray 70",  hex:"#525252"},
+    {name:"Gray 30",  hex:"#c6c6c6"},
+    {name:"White",    hex:"#ffffff"},
+    {name:"Blue 60",  hex:"#0f62fe"},
+    {name:"Blue 80",  hex:"#002d9c"},
+    {name:"Warm 100", hex:"#161417"},
+    {name:"Off-white",hex:"#fafafa"}
+  ]
+};
+
+/* ── Aspects ─────────────────────────────────────────────────── */
+const ASPECTS = {
+  "1:1": {w:1, h:1},  "16:9": {w:16, h:9}, "9:16": {w:9, h:16},
+  "4:3": {w:4, h:3},  "3:4": {w:3, h:4},
+  "2:1": {w:2, h:1},  "5:2": {w:5, h:2},   "1:3": {w:1, h:3}
+};
+
+/* ── Default state ──────────────────────────────────────────── */
+const DEFAULT_STATE = {
+  // grid
+  cols: 32, rows: 18, pad: 20, seed: 1972, zoom: 1.0,
+  // unit
+  angle: 15, length: 90, weight: 2, cap: "butt",
+  shape: "line", thick: 0.25,
+  // field A
+  fA_type: "sine", fA_drive: "angle",
+  fA_freq: 3.0, fA_amp: 1.0, fA_phase: 0, fA_rot: 0, fA_ox: 50, fA_oy: 50,
+  // field B
+  fB_type: "radial", fB_drive: "angle",
+  fB_freq: 2.0, fB_amp: 1.0, fB_phase: 0, fB_rot: 90, fB_ox: 50, fB_oy: 50,
+  // combine
+  blend: "add", wA: 0.5, wB: 0.5, bias: 0.0,
+  // motion
+  animTarget: "phase", spA: 1.0, spB: -0.6,
+  // depth
+  tiltX: 0, tiltY: 0, vanish: 1600,
+  parallax: 0, atmos: 0, shadow: 0,
+  zWave: 0, camZ: 0,
+  // image / reactive input
+  source: "off",
+  imgDrive: "off", imgStr: 80, imgCon: 1.0, imgInv: 0,
+  // ground
+  bg: "#fafafa", ink: "#161616", vig: 0,
+  aspect: "16:9"
+};
+
+/* ── Presets ─────────────────────────────────────────────────── */
+const PRESETS = [
+  { id:"third", name:"1 + 1 = 3 · signature", tag:"C",
+    state:{ cols:40, rows:24, pad:12, seed:1972, angle:0, length:95, weight:2, cap:"butt",
+      fA_type:"sine", fA_drive:"angle", fA_freq:4, fA_amp:1, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"radial", fB_drive:"angle", fB_freq:3, fB_amp:1, fB_phase:0, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"add", wA:0.5, wB:0.5, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:0, shadow:0,
+      bg:"#fafafa", ink:"#161616", vig:0, aspect:"16:9" } },
+  { id:"riley", name:"Riley · Fission", tag:"01",
+    state:{ cols:52, rows:28, pad:10, seed:1964, angle:0, length:100, weight:2, cap:"butt",
+      fA_type:"sine", fA_drive:"angle", fA_freq:6, fA_amp:1, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"sine", fB_drive:"angle", fB_freq:2, fB_amp:0.6, fB_phase:90, fB_rot:90, fB_ox:50, fB_oy:50,
+      blend:"add", wA:0.7, wB:0.4, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:0, shadow:0,
+      bg:"#ffffff", ink:"#161616", vig:0, aspect:"1:1" } },
+  { id:"ap", name:"A&P · Calendar", tag:"02",
+    state:{ cols:38, rows:22, pad:4, seed:2011, angle:0, length:120, weight:6, cap:"butt",
+      fA_type:"sine", fA_drive:"angle", fA_freq:1.6, fA_amp:1, fA_phase:0, fA_rot:10, fA_ox:50, fA_oy:50,
+      fB_type:"sine", fB_drive:"length", fB_freq:1, fB_amp:0.5, fB_phase:0, fB_rot:90, fB_ox:50, fB_oy:50,
+      blend:"add", wA:0.8, wB:0.4, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:0, shadow:0,
+      bg:"#f4f4f4", ink:"#161616", vig:0, aspect:"3:4" } },
+  { id:"flow", name:"Flow · Field", tag:"03",
+    state:{ cols:48, rows:30, pad:10, seed:3301, angle:0, length:90, weight:2, cap:"round",
+      fA_type:"flow", fA_drive:"angle", fA_freq:2, fA_amp:1.2, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"noise", fB_drive:"length", fB_freq:3, fB_amp:0.6, fB_phase:0, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"avg", wA:0.7, wB:0.5, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:20, atmos:10, shadow:0,
+      bg:"#0a0a0a", ink:"#ffffff", vig:20, aspect:"16:9" } },
+  { id:"moire", name:"Moiré · Interference", tag:"04",
+    state:{ cols:60, rows:40, pad:8, seed:7, angle:0, length:90, weight:2, cap:"butt",
+      fA_type:"sine", fA_drive:"angle", fA_freq:8, fA_amp:1, fA_phase:0, fA_rot:5, fA_ox:50, fA_oy:50,
+      fB_type:"sine", fB_drive:"angle", fB_freq:8, fB_amp:1, fB_phase:0, fB_rot:-5, fB_ox:50, fB_oy:50,
+      blend:"difference", wA:0.5, wB:0.5, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:0, shadow:0,
+      bg:"#ffffff", ink:"#161616", vig:0, aspect:"1:1" } },
+  { id:"pulse", name:"Radial · Pulse", tag:"05",
+    state:{ cols:40, rows:40, pad:18, seed:61, angle:0, length:70, weight:3, cap:"round",
+      fA_type:"radial", fA_drive:"length", fA_freq:4, fA_amp:1, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"radial", fB_drive:"angle", fB_freq:4, fB_amp:1, fB_phase:180, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"multiply", wA:1, wB:0.8, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:30, atmos:0, shadow:0,
+      bg:"#fafafa", ink:"#0f62fe", vig:0, aspect:"1:1" } },
+  { id:"rain", name:"Linear · Rain", tag:"06",
+    state:{ cols:40, rows:28, pad:18, seed:512, angle:15, length:110, weight:2, cap:"butt",
+      fA_type:"linear", fA_drive:"opacity", fA_freq:1, fA_amp:1, fA_phase:0, fA_rot:90, fA_ox:50, fA_oy:0,
+      fB_type:"noise", fB_drive:"length", fB_freq:6, fB_amp:0.6, fB_phase:0, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"add", wA:1, wB:0.4, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:30, shadow:0,
+      bg:"#fafafa", ink:"#161616", vig:0, aspect:"9:16" } },
+  { id:"vortex", name:"Vortex · Spiral", tag:"07",
+    state:{ cols:44, rows:44, pad:14, seed:888, angle:0, length:80, weight:2, cap:"butt",
+      fA_type:"vortex", fA_drive:"angle", fA_freq:1, fA_amp:1, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"radial", fB_drive:"length", fB_freq:3, fB_amp:0.7, fB_phase:0, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"add", wA:1, wB:0.5, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:0, shadow:0,
+      bg:"#161616", ink:"#c6c6c6", vig:30, aspect:"1:1" } },
+  { id:"ramp", name:"Depth · Ramp", tag:"08",
+    state:{ cols:36, rows:22, pad:14, seed:1024, zoom:1, angle:15, length:90, weight:2, cap:"butt",
+      shape:"line", thick:0.25,
+      fA_type:"sine", fA_drive:"angle", fA_freq:3, fA_amp:0.8, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"linear", fB_drive:"scale", fB_freq:1, fB_amp:1, fB_phase:0, fB_rot:90, fB_ox:50, fB_oy:100,
+      blend:"avg", wA:0.6, wB:0.8, bias:0,
+      tiltX:35, tiltY:8, vanish:1200, parallax:40, atmos:40, shadow:0, zWave:0, camZ:0,
+      bg:"#fafafa", ink:"#161616", vig:0, aspect:"16:9" } },
+  { id:"brut-slabs", name:"Brutalist · Slabs", tag:"B1",
+    state:{ cols:6, rows:4, pad:4, seed:1, zoom:1, angle:10, length:200, weight:2, cap:"butt",
+      shape:"rect", thick:0.9,
+      fA_type:"linear", fA_drive:"angle", fA_freq:0.5, fA_amp:0.2, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"sine", fB_drive:"length", fB_freq:0.5, fB_amp:0.3, fB_phase:0, fB_rot:90, fB_ox:50, fB_oy:50,
+      blend:"avg", wA:0.5, wB:0.5, bias:0,
+      tiltX:25, tiltY:-15, vanish:1400, parallax:0, atmos:15, shadow:0, zWave:0, camZ:0,
+      bg:"#fafafa", ink:"#161616", vig:0, aspect:"16:9" } },
+  { id:"brut-monolith", name:"Brutalist · Monolith", tag:"B2",
+    state:{ cols:3, rows:3, pad:10, seed:8, zoom:1, angle:0, length:300, weight:6, cap:"butt",
+      shape:"square", thick:1,
+      fA_type:"radial", fA_drive:"angle", fA_freq:1, fA_amp:0.3, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"linear", fB_drive:"scale", fB_freq:1, fB_amp:0.5, fB_phase:0, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"add", wA:0.4, wB:0.6, bias:0,
+      tiltX:20, tiltY:35, vanish:1800, parallax:0, atmos:0, shadow:0, zWave:0, camZ:0,
+      bg:"#161616", ink:"#fafafa", vig:20, aspect:"1:1" } },
+  { id:"max-discs", name:"Maximalist · Disc Field", tag:"M1",
+    state:{ cols:28, rows:18, pad:12, seed:42, zoom:1, angle:0, length:120, weight:2, cap:"butt",
+      shape:"circle", thick:1,
+      fA_type:"radial", fA_drive:"scale", fA_freq:2, fA_amp:0.8, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"sine", fB_drive:"angle", fB_freq:3, fB_amp:0.6, fB_phase:0, fB_rot:45, fB_ox:50, fB_oy:50,
+      blend:"multiply", wA:0.6, wB:0.8, bias:0,
+      tiltX:40, tiltY:10, vanish:1200, parallax:20, atmos:30, shadow:0, zWave:80, camZ:0,
+      bg:"#fafafa", ink:"#0f62fe", vig:0, aspect:"16:9" } },
+  { id:"max-riot", name:"Maximalist · Riot", tag:"M2",
+    state:{ cols:90, rows:60, pad:6, seed:9999, zoom:1, angle:0, length:110, weight:1, cap:"butt",
+      shape:"line", thick:0.25,
+      fA_type:"noise", fA_drive:"angle", fA_freq:4, fA_amp:1, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"flow", fB_drive:"length", fB_freq:3, fB_amp:0.8, fB_phase:0, fB_rot:0, fB_ox:50, fB_oy:50,
+      blend:"difference", wA:0.9, wB:0.7, bias:0,
+      tiltX:0, tiltY:0, vanish:1600, parallax:0, atmos:0, shadow:0, zWave:0, camZ:0,
+      bg:"#0a0a0a", ink:"#ffffff", vig:40, aspect:"16:9" } },
+  { id:"manifesto", name:"Manifesto · Giants", tag:"B3",
+    state:{ cols:4, rows:2, pad:6, seed:1972, zoom:1, angle:25, length:250, weight:12, cap:"butt",
+      shape:"triangle", thick:0.8,
+      fA_type:"linear", fA_drive:"angle", fA_freq:0.6, fA_amp:0.15, fA_phase:0, fA_rot:0, fA_ox:50, fA_oy:50,
+      fB_type:"sine", fB_drive:"scale", fB_freq:0.5, fB_amp:0.4, fB_phase:0, fB_rot:90, fB_ox:50, fB_oy:50,
+      blend:"add", wA:0.5, wB:0.5, bias:0,
+      tiltX:15, tiltY:-25, vanish:1400, parallax:0, atmos:0, shadow:0, zWave:0, camZ:0,
+      bg:"#0f62fe", ink:"#ffffff", vig:0, aspect:"2:1" } }
+];
+
+let state = loadState() || { ...DEFAULT_STATE, ...PRESETS[0].state };
+
+/* ── DOM refs ───────────────────────────────────────────────── */
+const frameEl  = document.getElementById('frame');
+const svgEl    = document.getElementById('field-svg');
+const tickSpec = document.getElementById('tick-spec');
+const tickDim  = document.getElementById('tick-dim');
+const tickCnt  = document.getElementById('tick-count');
+
+/* ── Helpers ────────────────────────────────────────────────── */
+function hexToRGBA(hex, alpha){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function resizeFrame(){
+  const [aw, ah] = state.aspect.split(':').map(Number);
+  const ratio = aw/ah;
+  const stage = document.querySelector('.stage');
+  const maxW = stage.clientWidth  - 120;
+  const maxH = stage.clientHeight - 120;
+  let fw, fh;
+  if (maxW / ratio <= maxH) { fw = maxW; fh = maxW / ratio; }
+  else                      { fh = maxH; fw = maxH * ratio; }
+  frameEl.style.width  = fw + 'px';
+  frameEl.style.height = fh + 'px';
+  return { fw, fh };
+}
+
+/* ── Image halftone — cached luminance buffer ─────────────── */
+// Downsampled grayscale [0..1], bilinear-sampled at normalised (fx, fy).
+const imgCache = { w: 0, h: 0, lum: null, url: null };
+
+function setImageFromSrc(src, filename){
+  const im = new Image();
+  im.crossOrigin = 'anonymous';
+  im.onload = () => {
+    // Downsample to at most 256 on the long edge — fast enough per frame
+    const MAX = 256;
+    const scale = Math.min(1, MAX / Math.max(im.width, im.height));
+    const w = Math.max(2, Math.round(im.width  * scale));
+    const h = Math.max(2, Math.round(im.height * scale));
+    const cvs = document.createElement('canvas');
+    cvs.width = w; cvs.height = h;
+    const ctx = cvs.getContext('2d');
+    ctx.drawImage(im, 0, 0, w, h);
+    const data = ctx.getImageData(0, 0, w, h).data;
+    // Build luminance buffer in Float32
+    const lum = new Float32Array(w * h);
+    for (let i = 0, j = 0; i < data.length; i += 4, j++){
+      // Rec. 709 luma
+      const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3] / 255;
+      // Alpha-aware: transparent pixels treated as white (no effect)
+      const y = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      lum[j] = a * y + (1 - a) * 1.0;
+    }
+    imgCache.w = w; imgCache.h = h; imgCache.lum = lum; imgCache.url = src;
+    // UI: preview + label + show clear button
+    const prev = document.getElementById('img-preview-el');
+    prev.src = src;
+    document.getElementById('img-preview').style.display = 'block';
+    document.getElementById('img-clear').style.display = 'block';
+    document.getElementById('img-label').textContent = filename ? ('◉  ' + filename) : '◉  image loaded';
+    // If drive is Off, auto-enable weight so user sees the effect immediately
+    if (state.imgDrive === 'off'){
+      state.imgDrive = 'weight';
+      const sel = document.getElementById('imgDrive');
+      if (sel) sel.value = 'weight';
+    }
+    render();
+  };
+  im.onerror = () => { alert('Could not load that image.'); };
+  im.src = src;
+}
+
+function sampleLuminance(fx, fy){
+  // Bilinear sample. fx, fy in [0..1]. Returns [0..1] (0=black, 1=white).
+  const lum = imgCache.lum;
+  if (!lum) return 1.0;
+  const w = imgCache.w, h = imgCache.h;
+  const x = Math.max(0, Math.min(1, fx)) * (w - 1);
+  const y = Math.max(0, Math.min(1, fy)) * (h - 1);
+  const x0 = x | 0, y0 = y | 0;
+  const x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1);
+  const tx = x - x0, ty = y - y0;
+  const a = lum[y0 * w + x0];
+  const b = lum[y0 * w + x1];
+  const c = lum[y1 * w + x0];
+  const d = lum[y1 * w + x1];
+  return a*(1-tx)*(1-ty) + b*tx*(1-ty) + c*(1-tx)*ty + d*tx*ty;
+}
+
+/* ── Microphone — live audio level ─────────────────────────── */
+let mic = { ctx: null, stream: null, analyser: null, buf: null, raf: null };
+let audioLevel = 0;
+async function startMic(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.7;
+    src.connect(analyser);
+    mic.ctx = ctx; mic.stream = stream; mic.analyser = analyser;
+    mic.buf = new Uint8Array(analyser.frequencyBinCount);
+    micTick();
+  } catch (err) {
+    alert('Microphone access was denied or is unavailable.\n\n' + (err && err.message || err));
+    // Revert source to off so the dropdown reflects reality
+    state.source = 'off';
+    document.getElementById('source').value = 'off';
+    updateSrcHint();
+  }
+}
+function micTick(){
+  if (!mic.analyser) return;
+  mic.analyser.getByteFrequencyData(mic.buf);
+  let sum = 0;
+  for (let i = 0; i < mic.buf.length; i++) sum += mic.buf[i];
+  const raw = (sum / mic.buf.length) / 255;
+  // Gentle attack/release smoothing beyond the analyser's own
+  audioLevel = audioLevel * 0.6 + raw * 0.4;
+  render();
+  mic.raf = requestAnimationFrame(micTick);
+}
+function stopMic(){
+  if (mic.raf) cancelAnimationFrame(mic.raf);
+  if (mic.stream) mic.stream.getTracks().forEach(t => t.stop());
+  if (mic.ctx && mic.ctx.state !== 'closed') mic.ctx.close();
+  mic = { ctx:null, stream:null, analyser:null, buf:null, raf:null };
+  audioLevel = 0;
+}
+
+/* ── Camera — live video into luminance buffer ────────────── */
+let cam = { stream: null, video: null, canvas: null, ctx: null, raf: null };
+async function startCamera(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+    });
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+    await video.play();
+    const canvas = document.createElement('canvas');
+    cam.stream = stream; cam.video = video; cam.canvas = canvas; cam.ctx = canvas.getContext('2d');
+    camTick();
+  } catch (err) {
+    alert('Camera access was denied or is unavailable.\n\n' + (err && err.message || err));
+    state.source = 'off';
+    document.getElementById('source').value = 'off';
+    updateSrcHint();
+  }
+}
+function camTick(){
+  if (!cam.stream || !cam.video) return;
+  const vw = cam.video.videoWidth, vh = cam.video.videoHeight;
+  if (vw && vh){
+    const W = 160, H = Math.round(W * vh / vw);
+    cam.canvas.width = W; cam.canvas.height = H;
+    const ctx = cam.ctx;
+    // Mirror horizontally (natural front-camera feel)
+    ctx.save();
+    ctx.translate(W, 0); ctx.scale(-1, 1);
+    ctx.drawImage(cam.video, 0, 0, W, H);
+    ctx.restore();
+    const data = ctx.getImageData(0, 0, W, H).data;
+    const lum = new Float32Array(W * H);
+    for (let i = 0, j = 0; i < data.length; i += 4, j++){
+      lum[j] = (0.2126 * data[i] + 0.7152 * data[i+1] + 0.0722 * data[i+2]) / 255;
+    }
+    imgCache.w = W; imgCache.h = H; imgCache.lum = lum;
+    render();
+  }
+  cam.raf = requestAnimationFrame(camTick);
+}
+function stopCamera(){
+  if (cam.raf) cancelAnimationFrame(cam.raf);
+  if (cam.stream) cam.stream.getTracks().forEach(t => t.stop());
+  cam = { stream:null, video:null, canvas:null, ctx:null, raf:null };
+}
+
+function updateSrcHint(){
+  const hint = document.getElementById('src-hint');
+  if (!hint) return;
+  hint.textContent = state.source;
+}
+
+/* ── Deterministic noise — mulberry32 value noise ───────────── */
+function mulberry32(seed){
+  let t = seed >>> 0;
+  return function(){
+    t = (t + 0x6D2B79F5) | 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hash2d(ix, iy, seed){
+  // Stable hash for integer grid coord → [0,1)
+  let h = seed ^ Math.imul(ix | 0, 374761393) ^ Math.imul(iy | 0, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+function smoothNoise(x, y, seed){
+  const ix = Math.floor(x), iy = Math.floor(y);
+  const fx = x - ix, fy = y - iy;
+  const ease = (t) => t * t * (3 - 2 * t);
+  const u = ease(fx), v = ease(fy);
+  const a = hash2d(ix,     iy,     seed);
+  const b = hash2d(ix + 1, iy,     seed);
+  const c = hash2d(ix,     iy + 1, seed);
+  const d = hash2d(ix + 1, iy + 1, seed);
+  return ( a*(1-u)*(1-v) + b*u*(1-v) + c*(1-u)*v + d*u*v ) * 2 - 1;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIELD FUNCTIONS
+   All return scalar in ~[-1, 1]. Coords (fx, fy) are normalised
+   to [0, 1] within the frame. Origin (ox, oy) in same space.
+   ═════════════════════════════════════════════════════════════ */
+function fieldValue(fx, fy, f, seed){
+  const ox = f.ox / 100, oy = f.oy / 100;
+  const rx = fx - ox, ry = fy - oy;
+  const rot = f.rot * Math.PI / 180;
+  const c = Math.cos(rot), s = Math.sin(rot);
+  const u = rx * c - ry * s;
+  const v = rx * s + ry * c;
+  const phase = f.phase * Math.PI / 180;
+  let val = 0;
+  switch (f.type){
+    case 'sine':
+      val = Math.sin(u * f.freq * Math.PI * 2 + phase);
+      break;
+    case 'radial': {
+      const d = Math.hypot(u, v);
+      val = Math.sin(d * f.freq * Math.PI * 2 + phase);
+      break;
+    }
+    case 'linear': {
+      // u normalised to range, mapped to [-1, 1] then wrapped
+      const x = u * f.freq + phase / (Math.PI * 2);
+      val = Math.max(-1, Math.min(1, x));
+      break;
+    }
+    case 'noise':
+      val = smoothNoise(u * f.freq + phase, v * f.freq, seed);
+      break;
+    case 'vortex': {
+      const d = Math.hypot(u, v);
+      const a = Math.atan2(v, u);
+      val = Math.sin(a * f.freq + d * f.freq * 3 + phase);
+      break;
+    }
+    case 'flow': {
+      // Curl of noise → swirl-like
+      const e = 0.01;
+      const n1 = smoothNoise((u + e) * f.freq, v * f.freq, seed);
+      const n2 = smoothNoise((u - e) * f.freq, v * f.freq, seed);
+      const n3 = smoothNoise(u * f.freq, (v + e) * f.freq, seed);
+      const n4 = smoothNoise(u * f.freq, (v - e) * f.freq, seed);
+      const dy = (n3 - n4) / (2 * e);
+      const dx = (n1 - n2) / (2 * e);
+      const ang = Math.atan2(dy, dx) + phase;
+      val = Math.sin(ang);
+      break;
+    }
+    case 'checker': {
+      const cx = Math.floor(u * f.freq + phase);
+      const cy = Math.floor(v * f.freq);
+      val = ((cx + cy) % 2 === 0) ? 1 : -1;
+      break;
+    }
+    case 'point': {
+      const d = Math.hypot(u, v);
+      val = 1 - Math.min(1, d * f.freq);
+      break;
+    }
+  }
+  return val * f.amp;
+}
+
+function combine(a, b, mode, wA, wB, bias){
+  const ax = a * wA, bx = b * wB;
+  let r = 0;
+  switch (mode){
+    case 'add':        r = ax + bx; break;
+    case 'multiply':   r = ax * bx; break;
+    case 'difference': r = Math.abs(ax - bx); break;
+    case 'min':        r = Math.min(ax, bx); break;
+    case 'max':        r = Math.max(ax, bx); break;
+    case 'mod':        r = ((ax + bx) * 0.5) + ((ax % (Math.abs(bx) + 0.01)) * 0.5); break;
+    case 'xor':        r = (Math.sign(ax) !== Math.sign(bx)) ? Math.max(Math.abs(ax), Math.abs(bx)) : 0; break;
+    case 'avg':        r = (ax + bx) * 0.5; break;
+  }
+  // Clamp into roughly [-1, 1]
+  r = r + bias;
+  if (r > 1) r = 1;
+  if (r < -1) r = -1;
+  return r;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SHAPE OUTLINES — side-view of a 3D form
+   Each outline is an array of [u, n] points in [-0.5, 0.5].
+   u runs along the slash axis, n runs perpendicular INTO the screen.
+   Edge-on (no tilt) → the shape collapses to a line = slash.
+   ═════════════════════════════════════════════════════════════ */
+function shapeOutline(shape, segs){
+  switch (shape){
+    case 'rect':
+    case 'square':
+      return [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
+    case 'circle':
+    case 'ellipse': {
+      const n = segs || 24;
+      const pts = [];
+      for (let i = 0; i < n; i++){
+        const t = (i / n) * Math.PI * 2;
+        pts.push([Math.sin(t) * 0.5, Math.cos(t) * 0.5]);
+      }
+      return pts;
+    }
+    case 'triangle':
+      return [[-0.5, 0.5], [0, -0.5], [0.5, 0.5]];
+    case 'diamond':
+      return [[0, -0.5], [0.5, 0], [0, 0.5], [-0.5, 0]];
+    case 'plus':
+      return [
+        [-0.16, -0.5], [0.16, -0.5], [0.16, -0.16], [0.5, -0.16],
+        [0.5,  0.16], [0.16,  0.16], [0.16,  0.5], [-0.16, 0.5],
+        [-0.16, 0.16], [-0.5, 0.16], [-0.5, -0.16], [-0.16, -0.16]
+      ];
+    default:
+      return null;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RENDER
+   Loops over the grid, computes A+B→C, applies C to drive param,
+   projects the cell with global 3D tilt, emits SVG lines / polygons.
+   ═════════════════════════════════════════════════════════════ */
+function render(){
+  const { fw, fh } = resizeFrame();
+  frameEl.style.background = state.bg;
+
+  const cols = state.cols, rows = state.rows;
+  const cellW = fw / cols;
+  const cellH = fh / rows;
+  const pad = state.pad / 100;
+  const cellMin = Math.min(cellW, cellH);
+  const baseLen = cellMin * (1 - pad) * (state.length / 100);
+
+  // Unit base angle → convert to radians (0° = vertical, matches slash-lab)
+  const baseAngle = state.angle * Math.PI / 180;
+
+  // Field packs
+  const A = {
+    type: state.fA_type, drive: state.fA_drive,
+    freq: state.fA_freq, amp: state.fA_amp, phase: state.fA_phase,
+    rot: state.fA_rot, ox: state.fA_ox, oy: state.fA_oy
+  };
+  const B = {
+    type: state.fB_type, drive: state.fB_drive,
+    freq: state.fB_freq, amp: state.fB_amp, phase: state.fB_phase,
+    rot: state.fB_rot, ox: state.fB_ox, oy: state.fB_oy
+  };
+
+  // Global 3D tilt — project cell centre through a simple perspective
+  const xR = state.tiltX * Math.PI / 180;
+  const yR = state.tiltY * Math.PI / 180;
+  const cX = Math.cos(xR), sX = Math.sin(xR);
+  const cY = Math.cos(yR), sY = Math.sin(yR);
+  const D = state.vanish;
+
+  // Ink defaults
+  const inkSolid = state.ink;
+  const cap = state.cap;
+  const shadowPx = state.shadow;
+  const parallax = state.parallax / 100;
+  const atmos = state.atmos / 100;
+
+  let lines = '';
+  let count = 0;
+
+  for (let r = 0; r < rows; r++){
+    for (let c = 0; c < cols; c++){
+      const fx = (c + 0.5) / cols;
+      const fy = (r + 0.5) / rows;
+
+      const va = fieldValue(fx, fy, A, state.seed);
+      const vb = fieldValue(fx, fy, B, state.seed + 991);
+      const vc = combine(va, vb, state.blend, state.wA, state.wB, state.bias);
+
+      // Per-cell drive parameters start from base
+      let aDeg = state.angle;
+      let lenMul = 1;
+      let wMul = 1;
+      let op = 1;
+      let offX = 0, offY = 0;
+      let scl = 1;
+
+      function apply(f, val){
+        // val in [-1, 1], scale to semantic range per driven param
+        switch (f.drive){
+          case 'angle':   aDeg += val * 90; break;                 // up to ±90°
+          case 'length':  lenMul *= (1 + val * 0.9); break;         // ±90% length
+          case 'weight':  wMul   *= (1 + val * 1.5); break;         // up to 2.5×
+          case 'opacity': op     *= (0.5 + (val + 1) * 0.25); break;// 0.5..1
+          case 'offsetX': offX   += val * cellW * 0.4; break;
+          case 'offsetY': offY   += val * cellH * 0.4; break;
+          case 'scale':   scl    *= (1 + val * 0.8); break;          // ±80%
+        }
+      }
+      // Field A contributes first (its drive)
+      apply(A, va * state.wA * (state.fA_amp));
+      // Field B contributes
+      apply(B, vb * state.wB * (state.fB_amp));
+      // Reactive source — sample luminance from image/camera, or use mic level uniformly
+      const hasImgSource = (state.source === 'image' || state.source === 'camera') && imgCache.lum;
+      const hasMic = state.source === 'mic';
+      if (state.imgDrive !== 'off' && (hasImgSource || hasMic)){
+        let lum = hasMic ? (1 - audioLevel) : sampleLuminance(fx, fy);
+        // Contrast remap around 0.5
+        lum = 0.5 + (lum - 0.5) * state.imgCon;
+        lum = Math.max(0, Math.min(1, lum));
+        // intensity: how "active" this cell should be. Default = dark pixels drive.
+        let intensity = 1 - lum;
+        if (state.imgInv) intensity = lum;
+        const str = state.imgStr / 100;
+        // Blend from neutral (1 at str=0) to full effect (intensity at str=1)
+        const k = 1 - str + str * intensity;  // used for multiplicative drives
+        switch (state.imgDrive){
+          case 'weight':  wMul *= (0.15 + k * 1.85); break;           // very thin to very thick
+          case 'length':  lenMul *= (0.1  + k * 1.4); break;           // short to long
+          case 'opacity': op *= k; break;                              // fade to invisible
+          case 'scale':   scl *= (0.2 + k * 1.6); break;
+          case 'jitter': {
+            // Use a deterministic hash per cell so the jitter is stable
+            const h = hash2d(c, r, state.seed) * 2 - 1;
+            aDeg += h * 90 * str * intensity;
+            break;
+          }
+        }
+      }
+      // The combined value feeds parallax scale (the 3rd pattern shows depth)
+      scl *= (1 + parallax * vc);
+
+      // Cap values
+      op = Math.max(0, Math.min(1, op));
+      if (lenMul < 0) lenMul = 0;
+      if (wMul < 0) wMul = 0;
+      if (scl < 0.05) scl = 0.05;
+
+      const len = baseLen * lenMul * scl;
+      const w   = state.weight * wMul;
+
+      // Atmospheric fade: attenuate opacity by combined value (darker in back)
+      if (atmos > 0){
+        op *= (1 - atmos * (1 - (vc * 0.5 + 0.5)));
+      }
+
+      if (op < 0.02 || len < 0.5) continue;
+
+      // Cell centre in world coords (origin at frame centre, Z into screen)
+      const baseX = (c + 0.5) * cellW + offX - fw/2;
+      const baseY = (r + 0.5) * cellH + offY - fh/2;
+      // Per-cell Z displacement driven by the combined field — the mesh wave
+      const pz0 = vc * state.zWave;
+
+      // Project a point from the cell's local slash/shape frame into screen coords.
+      // u is along slash axis, n is into screen (perpendicular to slash plane).
+      const angRad = aDeg * Math.PI / 180;
+      const sinA = Math.sin(angRad), cosA = Math.cos(angRad);
+
+      function projectPoint(uC, nC){
+        // Local slash frame → world (centred on cell)
+        let px = uC * len * scl * sinA + baseX;
+        let py = -uC * len * scl * cosA + baseY;
+        let pz = nC * len * scl * state.thick + pz0;
+        // Camera X tilt (pitch)
+        const y1 = py*cX - pz*sX;
+        const z1 = py*sX + pz*cX;
+        py = y1; pz = z1;
+        // Camera Y tilt (yaw)
+        const x1 = px*cY + pz*sY;
+        const z2 = -px*sY + pz*cY;
+        px = x1; pz = z2 + state.camZ;
+        // Perspective projection
+        const s = D / (D + pz);
+        return { x: px * s + fw/2, y: py * s + fh/2, z: pz };
+      }
+
+      if (state.shape === 'line'){
+        // LINE — stroke rendering, faster. Two endpoints only.
+        const p1 = projectPoint(-0.5, 0);
+        const p2 = projectPoint( 0.5, 0);
+        // Atmospheric fade based on mean Z
+        const meanZ = (p1.z + p2.z) * 0.5;
+        if (atmos > 0 || state.zWave > 0){
+          const depthFade = Math.max(0, Math.min(1, 1 - Math.max(0, meanZ) / (D * 1.8)));
+          op *= (1 - atmos * (1 - depthFade));
+        }
+        if (op < 0.02) continue;
+        if (shadowPx > 0){
+          lines += `<line x1="${(p1.x + shadowPx).toFixed(2)}" y1="${(p1.y + shadowPx).toFixed(2)}" x2="${(p2.x + shadowPx).toFixed(2)}" y2="${(p2.y + shadowPx).toFixed(2)}" stroke="${hexToRGBA(inkSolid, op * 0.25)}" stroke-width="${Math.max(0.5, w).toFixed(2)}" stroke-linecap="${cap}"/>`;
+        }
+        lines += `<line x1="${p1.x.toFixed(2)}" y1="${p1.y.toFixed(2)}" x2="${p2.x.toFixed(2)}" y2="${p2.y.toFixed(2)}" stroke="${op >= 1 ? inkSolid : hexToRGBA(inkSolid, op)}" stroke-width="${Math.max(0.3, w).toFixed(2)}" stroke-linecap="${cap}"/>`;
+      } else {
+        // SHAPE — polygon, side-view of a 3D form.
+        const outline = shapeOutline(state.shape, 24);
+        const projected = outline.map(p => projectPoint(p[0], p[1]));
+        // Atmospheric fade based on mean Z across the shape
+        let meanZ = 0;
+        for (const p of projected) meanZ += p.z;
+        meanZ /= projected.length;
+        if (atmos > 0 || state.zWave > 0){
+          const depthFade = Math.max(0, Math.min(1, 1 - Math.max(0, meanZ) / (D * 1.8)));
+          op *= (1 - atmos * (1 - depthFade));
+        }
+        if (op < 0.02) continue;
+        const pts = projected.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+        if (shadowPx > 0){
+          const shad = projected.map(p => `${(p.x + shadowPx).toFixed(2)},${(p.y + shadowPx).toFixed(2)}`).join(' ');
+          lines += `<polygon points="${shad}" fill="${hexToRGBA(inkSolid, op * 0.25)}"/>`;
+        }
+        lines += `<polygon points="${pts}" fill="${op >= 1 ? inkSolid : hexToRGBA(inkSolid, op)}"/>`;
+      }
+      count++;
+    }
+  }
+
+  // Vignette overlay
+  let vignette = '';
+  if (state.vig > 0){
+    const rad = state.vig / 100;
+    vignette = `
+      <defs>
+        <radialGradient id="vig" cx="50%" cy="50%" r="75%">
+          <stop offset="50%" stop-color="${hexToRGBA(state.bg, 0)}"/>
+          <stop offset="100%" stop-color="${hexToRGBA(state.bg === '#fafafa' || state.bg === '#ffffff' || state.bg === '#f4f4f4' ? '#000000' : state.bg, rad)}"/>
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="${fw}" height="${fh}" fill="url(#vig)" pointer-events="none"/>
+    `;
+  }
+
+  svgEl.setAttribute('viewBox', `0 0 ${fw} ${fh}`);
+  svgEl.innerHTML = `<g>${lines}</g>${vignette}`;
+  // Stage zoom — transform the SVG content, frame clips naturally
+  svgEl.style.transform = `scale(${state.zoom})`;
+  svgEl.style.transformOrigin = 'center center';
+
+  tickSpec.textContent = state.aspect;
+  tickDim.textContent  = `${Math.round(fw)} × ${Math.round(fh)}`;
+  tickCnt.textContent  = `${count.toLocaleString()} cells`;
+
+  updateReadouts();
+  updateFooter();
+  updateJSON();
+  saveState();
+}
+
+/* ═════════════════════════════════════════════════════════════
+   CONTROL WIRING
+   ═════════════════════════════════════════════════════════════ */
+function updateReadouts(){
+  document.getElementById('v-cols').textContent = state.cols;
+  document.getElementById('v-rows').textContent = state.rows;
+  document.getElementById('v-pad').textContent  = `${state.pad} %`;
+  document.getElementById('v-zoom').textContent = `${state.zoom.toFixed(2)}×`;
+  document.getElementById('v-seed').textContent = state.seed;
+  document.getElementById('v-thick').textContent = state.thick.toFixed(2);
+  document.getElementById('v-angle').textContent  = `${state.angle}°`;
+  document.getElementById('v-length').textContent = `${state.length} %`;
+  document.getElementById('v-weight').textContent = `${state.weight} px`;
+  document.getElementById('v-cap').textContent    = state.cap.charAt(0).toUpperCase() + state.cap.slice(1);
+  document.getElementById('v-fA_freq').textContent  = state.fA_freq.toFixed(1);
+  document.getElementById('v-fA_amp').textContent   = state.fA_amp.toFixed(2);
+  document.getElementById('v-fA_phase').textContent = `${state.fA_phase}°`;
+  document.getElementById('v-fA_rot').textContent   = `${state.fA_rot}°`;
+  document.getElementById('v-fA_ox').textContent    = `${state.fA_ox} %`;
+  document.getElementById('v-fA_oy').textContent    = `${state.fA_oy} %`;
+  document.getElementById('v-fB_freq').textContent  = state.fB_freq.toFixed(1);
+  document.getElementById('v-fB_amp').textContent   = state.fB_amp.toFixed(2);
+  document.getElementById('v-fB_phase').textContent = `${state.fB_phase}°`;
+  document.getElementById('v-fB_rot').textContent   = `${state.fB_rot}°`;
+  document.getElementById('v-fB_ox').textContent    = `${state.fB_ox} %`;
+  document.getElementById('v-fB_oy').textContent    = `${state.fB_oy} %`;
+  document.getElementById('v-wA').textContent   = state.wA.toFixed(2);
+  document.getElementById('v-wB').textContent   = state.wB.toFixed(2);
+  document.getElementById('v-bias').textContent = state.bias.toFixed(2);
+  document.getElementById('v-tiltX').textContent = `${state.tiltX}°`;
+  document.getElementById('v-tiltY').textContent = `${state.tiltY}°`;
+  document.getElementById('v-vanish').textContent   = state.vanish;
+  document.getElementById('v-parallax').textContent = `${state.parallax} %`;
+  document.getElementById('v-atmos').textContent    = `${state.atmos} %`;
+  document.getElementById('v-shadow').textContent   = `${state.shadow} px`;
+  document.getElementById('v-zWave').textContent    = state.zWave;
+  document.getElementById('v-camZ').textContent     = state.camZ;
+  document.getElementById('v-bg').textContent  = state.bg;
+  document.getElementById('v-ink').textContent = state.ink;
+  document.getElementById('v-vig').textContent = `${state.vig} %`;
+  document.getElementById('v-spA').textContent = `${state.spA.toFixed(1)}×`;
+  document.getElementById('v-spB').textContent = `${state.spB.toFixed(1)}×`;
+  document.getElementById('v-imgStr').textContent = `${state.imgStr} %`;
+  document.getElementById('v-imgCon').textContent = state.imgCon.toFixed(2);
+}
+
+function updateFooter(){
+  document.getElementById('f-grid').textContent   = `${state.cols} × ${state.rows}`;
+  document.getElementById('f-fA').textContent     = state.fA_type;
+  document.getElementById('f-fB').textContent     = state.fB_type;
+  document.getElementById('f-blend').textContent  = state.blend;
+  document.getElementById('f-tilt').textContent   = `${state.tiltX}°, ${state.tiltY}°`;
+  document.getElementById('f-aspect').textContent = state.aspect;
+}
+
+function wireSlider(id, prop, parser = parseFloat){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = state[prop];
+  el.addEventListener('input', () => {
+    state[prop] = parser(el.value);
+    render();
+  });
+}
+
+const intParse = (v) => parseInt(v, 10);
+[
+  ['cols','cols',intParse], ['rows','rows',intParse],
+  ['pad','pad',intParse], ['seed','seed',intParse],
+  ['angle','angle',intParse], ['length','length',intParse],
+  ['weight','weight',intParse],
+  ['fA_freq','fA_freq',parseFloat], ['fA_amp','fA_amp',parseFloat],
+  ['fA_phase','fA_phase',intParse], ['fA_rot','fA_rot',intParse],
+  ['fA_ox','fA_ox',intParse], ['fA_oy','fA_oy',intParse],
+  ['fB_freq','fB_freq',parseFloat], ['fB_amp','fB_amp',parseFloat],
+  ['fB_phase','fB_phase',intParse], ['fB_rot','fB_rot',intParse],
+  ['fB_ox','fB_ox',intParse], ['fB_oy','fB_oy',intParse],
+  ['wA','wA',parseFloat], ['wB','wB',parseFloat], ['bias','bias',parseFloat],
+  ['tiltX','tiltX',intParse], ['tiltY','tiltY',intParse],
+  ['vanish','vanish',intParse],
+  ['parallax','parallax',intParse], ['atmos','atmos',intParse], ['shadow','shadow',intParse],
+  ['zWave','zWave',intParse], ['camZ','camZ',intParse],
+  ['vig','vig',intParse],
+  ['spA','spA',parseFloat], ['spB','spB',parseFloat],
+  ['zoom','zoom',parseFloat], ['thick','thick',parseFloat],
+  ['imgStr','imgStr',intParse], ['imgCon','imgCon',parseFloat]
+].forEach(([id, prop, parser]) => wireSlider(id, prop, parser));
+
+/* ── Selects ─────────────────────────────────────────────────── */
+function wireSelect(id, prop){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = state[prop];
+  el.addEventListener('change', () => {
+    state[prop] = el.value;
+    render();
+  });
+}
+['fA_type','fA_drive','fB_type','fB_drive','blend','animTarget','shape','imgDrive'].forEach(id => wireSelect(id, id));
+
+/* ── Source select — Off / Image / Mic / Camera ──────────────── */
+function applySource(next){
+  const prev = state.source;
+  if (prev === next) return;
+  // Stop previous
+  if (prev === 'mic') stopMic();
+  if (prev === 'camera') stopCamera();
+  if (prev === 'image' || prev === 'camera'){
+    // For image-less modes clear the cache
+    if (next !== 'image' && next !== 'camera'){
+      imgCache.w = 0; imgCache.h = 0; imgCache.lum = null; imgCache.url = null;
+    }
+  }
+  state.source = next;
+  updateSrcHint();
+  // Toggle image upload UI visibility
+  document.getElementById('img-upload-btn').style.display = (next === 'image') ? 'block' : 'none';
+  const prev_el = document.getElementById('img-preview');
+  const clr_el = document.getElementById('img-clear');
+  if (next !== 'image'){
+    if (prev_el) prev_el.style.display = 'none';
+    if (clr_el) clr_el.style.display = 'none';
+  } else if (imgCache.lum && imgCache.url){
+    if (prev_el) prev_el.style.display = 'block';
+    if (clr_el) clr_el.style.display = 'block';
+  }
+  // Auto-enable a drive if user just activated a source
+  if (next !== 'off' && state.imgDrive === 'off'){
+    state.imgDrive = 'weight';
+    const d = document.getElementById('imgDrive');
+    if (d) d.value = 'weight';
+  }
+  // Start new source
+  if (next === 'mic') startMic();
+  if (next === 'camera') startCamera();
+  render();
+}
+document.getElementById('source').addEventListener('change', (e) => applySource(e.target.value));
+
+/* ── Swatches ─────────────────────────────────────────────────── */
+function buildSwatches(container, palette, prop){
+  container.innerHTML = '';
+  palette.forEach(sw => {
+    const btn = document.createElement('button');
+    btn.className = 'swatch';
+    btn.style.background = sw.hex;
+    btn.setAttribute('title', `${sw.name} · ${sw.hex}`);
+    btn.dataset.hex = sw.hex;
+    if (state[prop] === sw.hex) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      state[prop] = sw.hex;
+      container.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+    container.appendChild(btn);
+  });
+}
+buildSwatches(document.getElementById('sw-bg'),  PALETTE.ground, 'bg');
+buildSwatches(document.getElementById('sw-ink'), PALETTE.ink,    'ink');
+
+/* ── Toggles ─────────────────────────────────────────────────── */
+function wireToggle(containerId, prop, parser = (v) => v){
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.toggle-opt').forEach(btn => {
+    if (String(state[prop]) === btn.dataset.val) btn.classList.add('active');
+    else btn.classList.remove('active');
+    btn.addEventListener('click', () => {
+      state[prop] = parser(btn.dataset.val);
+      container.querySelectorAll('.toggle-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (containerId === 'tg-aspect')  document.querySelectorAll('#tg-aspect2 .toggle-opt').forEach(b => b.classList.remove('active'));
+      if (containerId === 'tg-aspect2') document.querySelectorAll('#tg-aspect .toggle-opt').forEach(b => b.classList.remove('active'));
+      render();
+    });
+  });
+}
+wireToggle('tg-cap', 'cap');
+wireToggle('tg-aspect', 'aspect');
+wireToggle('tg-aspect2', 'aspect');
+wireToggle('tg-imgInv', 'imgInv', (v) => parseInt(v, 10));
+
+/* ── Image upload & clear ──────────────────────────────────── */
+document.getElementById('img-upload').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => setImageFromSrc(reader.result, file.name);
+  reader.readAsDataURL(file);
+});
+document.getElementById('img-clear').addEventListener('click', () => {
+  imgCache.w = 0; imgCache.h = 0; imgCache.lum = null; imgCache.url = null;
+  document.getElementById('img-upload').value = '';
+  document.getElementById('img-label').textContent = 'Upload · PNG · JPG · SVG';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('img-clear').style.display = 'none';
+  state.imgDrive = 'off';
+  const sel = document.getElementById('imgDrive');
+  if (sel) sel.value = 'off';
+  render();
+});
+
+/* ═════════════════════════════════════════════════════════════
+   PRESETS
+   ═════════════════════════════════════════════════════════════ */
+function buildPresetThumb(preset){
+  // Tiny field render — 12×8 cells
+  const w = 56, h = 36;
+  const p = preset.state;
+  const cols = 14, rows = 9;
+  const cellW = w/cols, cellH = h/rows;
+  const len = Math.min(cellW, cellH) * 0.9 * (p.length/100);
+
+  const A = { type:p.fA_type, drive:p.fA_drive, freq:p.fA_freq, amp:p.fA_amp, phase:p.fA_phase, rot:p.fA_rot, ox:p.fA_ox, oy:p.fA_oy };
+  const B = { type:p.fB_type, drive:p.fB_drive, freq:p.fB_freq, amp:p.fB_amp, phase:p.fB_phase, rot:p.fB_rot, ox:p.fB_ox, oy:p.fB_oy };
+
+  let body = '';
+  for (let r = 0; r < rows; r++){
+    for (let c = 0; c < cols; c++){
+      const fx = (c+0.5)/cols, fy = (r+0.5)/rows;
+      const va = fieldValue(fx, fy, A, p.seed);
+      const vb = fieldValue(fx, fy, B, p.seed + 991);
+      let aDeg = p.angle;
+      function apply(f, val){
+        if (f.drive === 'angle') aDeg += val * 90;
+      }
+      apply(A, va * p.wA * p.fA_amp);
+      apply(B, vb * p.wB * p.fB_amp);
+      const ang = aDeg * Math.PI / 180;
+      const xC = (c+0.5)*cellW, yC = (r+0.5)*cellH;
+      const hx = Math.sin(ang) * len/2;
+      const hy = -Math.cos(ang) * len/2;
+      body += `<line x1="${(xC-hx).toFixed(2)}" y1="${(yC-hy).toFixed(2)}" x2="${(xC+hx).toFixed(2)}" y2="${(yC+hy).toFixed(2)}" stroke="${p.ink}" stroke-width="0.8"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${p.bg}"/>${body}</svg>`;
+}
+
+const presetContainer = document.getElementById('presets');
+PRESETS.forEach(p => {
+  const row = document.createElement('div');
+  row.className = 'preset';
+  row.innerHTML = `
+    <div class="preset-thumb">${buildPresetThumb(p)}</div>
+    <div class="preset-name">${p.name}</div>
+    <div class="preset-tag">${p.tag}</div>
+  `;
+  row.addEventListener('click', () => {
+    state = { ...DEFAULT_STATE, ...p.state };
+    syncAllInputs();
+    render();
+  });
+  presetContainer.appendChild(row);
+});
+
+function syncAllInputs(){
+  [
+    'cols','rows','pad','seed',
+    'angle','length','weight',
+    'fA_freq','fA_amp','fA_phase','fA_rot','fA_ox','fA_oy',
+    'fB_freq','fB_amp','fB_phase','fB_rot','fB_ox','fB_oy',
+    'wA','wB','bias',
+    'tiltX','tiltY','vanish','parallax','atmos','shadow','vig',
+    'zWave','camZ','spA','spB','zoom','thick','imgStr','imgCon'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[id] ?? DEFAULT_STATE[id] ?? 0;
+  });
+  ['fA_type','fA_drive','fB_type','fB_drive','blend','animTarget','shape','imgDrive','source'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[id];
+  });
+  updateSrcHint && updateSrcHint();
+  buildSwatches(document.getElementById('sw-bg'),  PALETTE.ground, 'bg');
+  buildSwatches(document.getElementById('sw-ink'), PALETTE.ink,    'ink');
+  document.querySelectorAll('#tg-cap .toggle-opt').forEach(b => b.classList.toggle('active', state.cap === b.dataset.val));
+  document.querySelectorAll('#tg-imgInv .toggle-opt').forEach(b => b.classList.toggle('active', String(state.imgInv) === b.dataset.val));
+  document.querySelectorAll('#tg-aspect .toggle-opt').forEach(b => b.classList.toggle('active', state.aspect === b.dataset.val));
+  document.querySelectorAll('#tg-aspect2 .toggle-opt').forEach(b => b.classList.toggle('active', state.aspect === b.dataset.val));
+}
+
+/* ═════════════════════════════════════════════════════════════
+   EXPORT
+   ═════════════════════════════════════════════════════════════ */
+function getExportSVG(){
+  const clone = svgEl.cloneNode(true);
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width', '100%');
+  bg.setAttribute('height', '100%');
+  bg.setAttribute('fill', state.bg);
+  clone.insertBefore(bg, clone.firstChild);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  return new XMLSerializer().serializeToString(clone);
+}
+
+function download(filename, blob){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+document.getElementById('ex-svg').addEventListener('click', () => {
+  const svgText = getExportSVG();
+  download('slash-field.svg', new Blob([svgText], {type:'image/svg+xml'}));
+});
+
+document.getElementById('ex-png').addEventListener('click', () => {
+  const svgText = getExportSVG();
+  const svgBlob = new Blob([svgText], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const rect = frameEl.getBoundingClientRect();
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.round(rect.width  * scale);
+    canvas.height = Math.round(rect.height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = state.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(blob => download('slash-field@2x.png', blob), 'image/png');
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = () => {
+    alert('PNG export failed. Try Download SVG instead.');
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+});
+
+document.getElementById('ex-json').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(buildSchema(), null, 2));
+    flash(document.getElementById('ex-json'), 'Copied ✓');
+  } catch {
+    prompt('Copy the state JSON:', JSON.stringify(buildSchema(), null, 2));
+  }
+});
+
+document.getElementById('copy-json').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(buildSchema(), null, 2));
+    flash(document.getElementById('copy-json'), '✓');
+  } catch {}
+});
+
+function flash(el, msg){
+  const old = el.textContent;
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = old; }, 900);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   STATE SCHEMA (AI-readable)
+   ═════════════════════════════════════════════════════════════ */
+function buildSchema(){
+  return {
+    $schema: "https://code-and-theory.com/ibm/slash-field/v0.1",
+    signature: "A ⊕ B = C · Only with IBM",
+    grid:     { cols: state.cols, rows: state.rows, padding_pct: state.pad, seed: state.seed, zoom: state.zoom },
+    unit:     { angle_deg: state.angle, length_pct: state.length, weight_px: state.weight, cap: state.cap,
+                shape: state.shape, thickness: state.thick },
+    field_A:  { type: state.fA_type, drives: state.fA_drive,
+                frequency: state.fA_freq, amplitude: state.fA_amp, phase_deg: state.fA_phase,
+                rotation_deg: state.fA_rot, origin: { x_pct: state.fA_ox, y_pct: state.fA_oy } },
+    field_B:  { type: state.fB_type, drives: state.fB_drive,
+                frequency: state.fB_freq, amplitude: state.fB_amp, phase_deg: state.fB_phase,
+                rotation_deg: state.fB_rot, origin: { x_pct: state.fB_ox, y_pct: state.fB_oy } },
+    combine:  { blend: state.blend, weight_A: state.wA, weight_B: state.wB, bias: state.bias },
+    depth:    { tilt_x_deg: state.tiltX, tilt_y_deg: state.tiltY, vanish: state.vanish,
+                parallax_pct: state.parallax, atmospheric_pct: state.atmos, shadow_px: state.shadow,
+                z_wave: state.zWave, camera_z: state.camZ },
+    image:    imgCache.lum ? { drives: state.imgDrive, strength_pct: state.imgStr,
+                contrast: state.imgCon, invert: !!state.imgInv,
+                source_size: `${imgCache.w}×${imgCache.h}` } : null,
+    palette:  { ground: state.bg, ink: state.ink, vignette_pct: state.vig },
+    frame:    { aspect: state.aspect }
+  };
+}
+
+const jsonView = document.getElementById('json-view');
+function updateJSON(){
+  const copyBtn = jsonView.querySelector('.copy-json');
+  const pretty = JSON.stringify(buildSchema(), null, 2)
+    .replace(/"([^"]+)":/g, '<span class="json-key">"$1":</span>')
+    .replace(/: (-?\d+(\.\d+)?)/g, ': <span class="json-num">$1</span>')
+    .replace(/: "([^"]+)"/g, ': <span class="json-str">"$1"</span>');
+  jsonView.innerHTML = pretty;
+  jsonView.prepend(copyBtn);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   PERSISTENCE
+   ═════════════════════════════════════════════════════════════ */
+const STORE_KEY = 'slash-field-state-v2';
+function saveState(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch {}
+}
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Guarantee numeric speeds never lock animation
+    if (typeof parsed.spA !== 'number' || !isFinite(parsed.spA)) parsed.spA = 1.0;
+    if (typeof parsed.spB !== 'number' || !isFinite(parsed.spB)) parsed.spB = -0.6;
+    if (typeof parsed.zoom !== 'number' || !isFinite(parsed.zoom) || parsed.zoom <= 0) parsed.zoom = 1.0;
+    if (typeof parsed.thick !== 'number' || !isFinite(parsed.thick)) parsed.thick = 0.25;
+    // Don't auto-start mic/camera on page load — user must opt in each session
+    if (parsed.source === 'mic' || parsed.source === 'camera') parsed.source = 'off';
+    return { ...DEFAULT_STATE, ...parsed };
+  } catch { return null; }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SIMPLE · ADVANCED UI TOGGLE
+   ═════════════════════════════════════════════════════════════ */
+(function initAdvToggle(){
+  const body = document.body;
+  const btn = document.getElementById('adv-toggle');
+  // Persist across sessions
+  if (localStorage.getItem('slash-field-adv') === '1') body.classList.add('advanced');
+  const sync = () => { btn.textContent = body.classList.contains('advanced') ? 'Simple' : 'Advanced'; };
+  sync();
+  btn.addEventListener('click', () => {
+    body.classList.toggle('advanced');
+    try { localStorage.setItem('slash-field-adv', body.classList.contains('advanced') ? '1' : '0'); } catch {}
+    sync();
+    // Trigger a re-layout render so the stage resizes into new rail widths
+    render();
+  });
+})();
+
+/* ═════════════════════════════════════════════════════════════
+   KEYBOARD
+   ═════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches('input,textarea,button,select')) return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    const keys = Object.keys(ASPECTS);
+    const i = keys.indexOf(state.aspect);
+    state.aspect = keys[(i + 1) % keys.length];
+    syncAllInputs();
+    render();
+  }
+  if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey) {
+    state = { ...DEFAULT_STATE };
+    syncAllInputs();
+    render();
+  }
+  if (e.code === 'KeyN' && !e.metaKey && !e.ctrlKey) {
+    state.seed = Math.floor(Math.random() * 9999);
+    syncAllInputs();
+    render();
+  }
+});
+
+/* ═════════════════════════════════════════════════════════════
+   COLLAPSIBLE SECTIONS
+   ═════════════════════════════════════════════════════════════ */
+(function initCollapsible() {
+  const collapsibleSecs = ['grid','unit','fieldA','fieldB','combine','motion','depth','image','ground'];
+  const closedByDefault = ['unit','fieldA','fieldB','depth','image','ground']; // 01 Grid + 05 Combine + 06 Motion open by default
+
+  collapsibleSecs.forEach(sec => {
+    const el = document.querySelector(`.section[data-sec="${sec}"]`);
+    if (!el) return;
+    const body = el.querySelector('.section-body');
+    const inner = document.createElement('div');
+    inner.className = 'section-body-inner';
+    while (body.firstChild) inner.appendChild(body.firstChild);
+    body.appendChild(inner);
+    el.classList.add('collapsible');
+    if (closedByDefault.includes(sec)) el.classList.add('collapsed');
+    el.querySelector('.section-head').addEventListener('click', () => {
+      el.classList.toggle('collapsed');
+    });
+  });
+})();
+
+/* ═════════════════════════════════════════════════════════════
+   MOTION · ANIMATION LOOP
+   ═════════════════════════════════════════════════════════════ */
+let playing = false;
+let animFrame = null;
+let animT0 = 0;
+
+function tick(ts){
+  if (!playing) return;
+  if (!animT0) animT0 = ts;
+  const dt = (ts - animT0) / 1000; // seconds since start
+  const base = dt * 60; // degrees per second at speed 1.0
+  // Defensive: ensure speeds are numeric and animation target is valid
+  const sA = (typeof state.spA === 'number' && isFinite(state.spA)) ? state.spA : 1.0;
+  const sB = (typeof state.spB === 'number' && isFinite(state.spB)) ? state.spB : -0.6;
+  const target = state.animTarget || 'phase';
+  try {
+
+  // Seed for noise-based drift
+  if (target === 'phase' || target === 'phaseA')  state.fA_phase = ((base * sA) % 360 + 360) % 360;
+  if (target === 'phase' || target === 'phaseB')  state.fB_phase = ((base * sB) % 360 + 360) % 360;
+  if (target === 'rotation'){
+    state.fA_rot = ((base * sA * 0.5 + 180) % 360) - 180;
+    state.fB_rot = ((base * sB * 0.5 + 180) % 360) - 180;
+  }
+  if (target === 'origin'){
+    state.fA_ox = 50 + Math.sin(dt * sA * 0.6) * 40;
+    state.fA_oy = 50 + Math.cos(dt * sA * 0.4) * 40;
+    state.fB_ox = 50 + Math.sin(dt * sB * 0.5 + 1) * 40;
+    state.fB_oy = 50 + Math.cos(dt * sB * 0.7 + 1) * 40;
+  }
+  if (target === 'bias'){
+    state.bias = Math.sin(dt * sA * 0.5) * 0.8;
+  }
+  if (target === 'seed'){
+    // Slow scramble — advances seed every ~0.5s scaled by speed
+    state.seed = ((dt * Math.abs(sA) * 4) | 0) % 9999;
+  }
+  if (target === 'camOrbit'){
+    // Camera orbits around the scene — tiltX and tiltY ride sine/cosine
+    state.tiltX = Math.round(Math.sin(dt * sA * 0.5) * 30);
+    state.tiltY = Math.round(Math.cos(dt * sB * 0.5) * 30);
+  }
+  if (target === 'dolly'){
+    // Camera pushes/pulls along Z — literal flythrough
+    state.camZ = Math.round(Math.sin(dt * sA * 0.4) * 500);
+  }
+  if (target === 'zWave'){
+    // The per-cell Z displacement amplitude pulses
+    state.zWave = Math.round(150 + Math.sin(dt * sA * 0.6) * 150);
+    // And field phases drift slowly so the wave pattern isn't static
+    state.fA_phase = ((base * 0.2) % 360 + 360) % 360;
+  }
+
+    // Update corresponding slider DOM values so user sees motion
+    syncAnimInputs(target);
+    render();
+  } catch (err) {
+    console.warn('[Slash Field · tick] caught error, continuing:', err);
+  }
+  // ALWAYS reschedule so the loop can self-heal
+  animFrame = requestAnimationFrame(tick);
+}
+
+function syncAnimInputs(target){
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  if (target === 'phase' || target === 'phaseA') set('fA_phase', state.fA_phase);
+  if (target === 'phase' || target === 'phaseB') set('fB_phase', state.fB_phase);
+  if (target === 'rotation'){ set('fA_rot', state.fA_rot); set('fB_rot', state.fB_rot); }
+  if (target === 'origin'){ set('fA_ox', state.fA_ox); set('fA_oy', state.fA_oy); set('fB_ox', state.fB_ox); set('fB_oy', state.fB_oy); }
+  if (target === 'bias') set('bias', state.bias);
+  if (target === 'seed') set('seed', state.seed);
+  if (target === 'camOrbit'){ set('tiltX', state.tiltX); set('tiltY', state.tiltY); }
+  if (target === 'dolly') set('camZ', state.camZ);
+  if (target === 'zWave'){ set('zWave', state.zWave); set('fA_phase', state.fA_phase); }
+}
+
+function setPlaying(p){
+  playing = p;
+  const btn = document.getElementById('play-btn');
+  if (playing){
+    btn.textContent = '❚❚  Pause';
+    btn.classList.add('btn-playing');
+    animT0 = 0;
+    animFrame = requestAnimationFrame(tick);
+  } else {
+    btn.textContent = '▶  Play';
+    btn.classList.remove('btn-playing');
+    if (animFrame) cancelAnimationFrame(animFrame);
+  }
+}
+
+document.getElementById('play-btn').addEventListener('click', () => setPlaying(!playing));
+
+/* Extra keyboard: P toggles play */
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches('input,textarea,button,select')) return;
+  if (e.code === 'KeyP' && !e.metaKey && !e.ctrlKey) {
+    e.preventDefault();
+    setPlaying(!playing);
+  }
+});
+
+/* When loading a preset, reset the animation clock so motion is continuous from the new scene */
+document.querySelectorAll('#presets .preset').forEach(row => {
+  row.addEventListener('click', () => { animT0 = 0; }, true);
+});
+
+/* ═════════════════════════════════════════════════════════════
+   TRACKBALL · DRAG ORBIT + SCROLL DOLLY
+   Drag on the stage → tiltX (vertical) & tiltY (horizontal).
+   Shift+drag → pan origin of both fields.
+   Scroll wheel → camera dolly (camZ).
+   ═════════════════════════════════════════════════════════════ */
+(function(){
+  const el = svgEl;
+  const drag = { active: false, px: 0, py: 0, shift: false };
+
+  el.addEventListener('pointerdown', e => {
+    drag.active = true;
+    drag.px = e.clientX;
+    drag.py = e.clientY;
+    drag.shift = e.shiftKey;
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+  });
+
+  el.addEventListener('pointermove', e => {
+    if (!drag.active) return;
+    const dx = e.clientX - drag.px;
+    const dy = e.clientY - drag.py;
+    drag.px = e.clientX;
+    drag.py = e.clientY;
+
+    if (e.shiftKey || drag.shift){
+      // Shift-drag pans both field origins (great for radial/vortex/point)
+      const rect = frameEl.getBoundingClientRect();
+      const pxPct = (dx / rect.width) * 100;
+      const pyPct = (dy / rect.height) * 100;
+      state.fA_ox = Math.max(-50, Math.min(150, state.fA_ox + pxPct));
+      state.fA_oy = Math.max(-50, Math.min(150, state.fA_oy + pyPct));
+      state.fB_ox = Math.max(-50, Math.min(150, state.fB_ox + pxPct));
+      state.fB_oy = Math.max(-50, Math.min(150, state.fB_oy + pyPct));
+      ['fA_ox','fA_oy','fB_ox','fB_oy'].forEach(id => {
+        const i = document.getElementById(id);
+        if (i) i.value = Math.round(state[id]);
+      });
+    } else {
+      // Plain drag orbits the camera.
+      // Horizontal drag → tiltY (sideways rotation)
+      // Vertical drag   → tiltX (forward/back tilt), inverted so drag up tips forward
+      state.tiltY = Math.max(-60, Math.min(60, state.tiltY + dx * 0.25));
+      state.tiltX = Math.max(-60, Math.min(60, state.tiltX - dy * 0.25));
+      const tx = document.getElementById('tiltX');
+      const ty = document.getElementById('tiltY');
+      if (tx) tx.value = Math.round(state.tiltX);
+      if (ty) ty.value = Math.round(state.tiltY);
+    }
+    render();
+  });
+
+  const end = () => { drag.active = false; el.classList.remove('dragging'); };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    // Positive wheel → push camera into scene (camZ up); clamp.
+    state.camZ = Math.max(-800, Math.min(800, state.camZ + e.deltaY * 0.8));
+    const cz = document.getElementById('camZ');
+    if (cz) cz.value = Math.round(state.camZ);
+    render();
+  }, { passive: false });
+
+  // Double-click resets the camera (tilt + dolly)
+  el.addEventListener('dblclick', () => {
+    state.tiltX = 0; state.tiltY = 0; state.camZ = 0;
+    ['tiltX','tiltY','camZ'].forEach(id => {
+      const i = document.getElementById(id);
+      if (i) i.value = state[id];
+    });
+    render();
+  });
+})();
+
+/* ═════════════════════════════════════════════════════════════
+   INIT
+   ═════════════════════════════════════════════════════════════ */
+window.addEventListener('resize', render);
+syncAllInputs();
+render();
+
+</script>
+</body>
+</html>
