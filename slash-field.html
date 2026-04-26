@@ -1249,7 +1249,7 @@ function sampleLuminance(fx, fy){
 }
 
 /* ── Status panel helpers ──────────────────────────────────── */
-function setSrcStatus(kind, label){
+function setSrcStatus(kind, label, withRetry){
   const wrap = document.getElementById('src-status');
   const lbl  = document.getElementById('src-status-label');
   const meter = document.getElementById('src-meter');
@@ -1261,19 +1261,46 @@ function setSrcStatus(kind, label){
   meter.style.display = (kind === 'mic') ? 'block' : 'none';
   camP.style.display  = (kind === 'cam') ? 'block' : 'none';
   err.style.display   = (kind === 'err') ? 'block' : 'none';
-  if (kind === 'err'){ err.textContent = label; lbl.textContent = ''; }
+  if (kind === 'err'){
+    err.innerHTML = '';
+    const msg = document.createElement('div');
+    msg.textContent = label;
+    err.appendChild(msg);
+    if (withRetry){
+      const retry = document.createElement('button');
+      retry.textContent = 'Try again';
+      retry.style.cssText = 'margin-top:10px; padding:6px 10px; font-family: var(--mono); font-size:10px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--ink); color: var(--bg); border: 1px solid var(--ink); cursor: pointer;';
+      retry.addEventListener('click', () => {
+        // Re-pick whatever the dropdown shows, or default to the kind we were trying
+        const sel = document.getElementById('source');
+        const want = (sel && sel.value !== 'off' && sel.value !== 'image') ? sel.value : 'mic';
+        sel.value = want;
+        applySource(want);
+      });
+      err.appendChild(retry);
+    }
+    lbl.textContent = '';
+  }
 }
 
 /* ── Microphone — live audio level ─────────────────────────── */
 let mic = { ctx: null, stream: null, analyser: null, buf: null, raf: null };
 let audioLevel = 0;
+let micRequestTimer = null;
 async function startMic(){
-  setSrcStatus('mic', '● Requesting microphone…');
+  setSrcStatus('mic', '● Requesting microphone permission…');
+  if (micRequestTimer) clearTimeout(micRequestTimer);
+  micRequestTimer = setTimeout(() => {
+    if (!mic.stream){
+      setSrcStatus('err', '✕ No response from microphone. Permission may be blocked at the browser or OS level. Click the lock icon in the URL bar → allow Microphone → reload. On macOS check System Settings → Privacy → Microphone.', true);
+    }
+  }, 6000);
   try {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       throw new Error('getUserMedia not supported in this browser.');
     }
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (micRequestTimer){ clearTimeout(micRequestTimer); micRequestTimer = null; }
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) throw new Error('Web Audio not supported.');
     const ctx = new Ctx();
@@ -1285,13 +1312,22 @@ async function startMic(){
     src.connect(analyser);
     mic.ctx = ctx; mic.stream = stream; mic.analyser = analyser;
     mic.buf = new Uint8Array(analyser.frequencyBinCount);
-    setSrcStatus('mic', '● Microphone live · level');
+    setSrcStatus('mic', '● Microphone live · slashes react');
     micTick();
   } catch (err) {
-    const msg = (err && err.name === 'NotAllowedError')
-      ? '✕ Microphone permission denied. Allow it in your browser bar, then re-select Microphone.'
-      : '✕ Microphone unavailable: ' + (err && err.message || err);
-    setSrcStatus('err', msg);
+    if (micRequestTimer){ clearTimeout(micRequestTimer); micRequestTimer = null; }
+    const name = err && err.name;
+    let msg;
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError'){
+      msg = '✕ Microphone blocked. Click the lock/info icon at the left of the URL bar → set Microphone to Allow → reload, then re-select Microphone.';
+    } else if (name === 'NotFoundError'){
+      msg = '✕ No microphone detected on this device.';
+    } else if (name === 'NotReadableError'){
+      msg = '✕ Microphone is in use by another app. Close it and try again.';
+    } else {
+      msg = '✕ Microphone unavailable: ' + (err && err.message || err);
+    }
+    setSrcStatus('err', msg, true);
     state.source = 'off';
     document.getElementById('source').value = 'off';
     updateSrcHint();
@@ -1321,8 +1357,16 @@ function stopMic(){
 
 /* ── Camera — live video into luminance buffer ────────────── */
 let cam = { stream: null, video: null, canvas: null, ctx: null, raf: null };
+let camRequestTimer = null;
 async function startCamera(){
-  setSrcStatus('cam', '● Requesting camera…');
+  setSrcStatus('cam', '● Requesting camera permission…');
+  // If the prompt is dismissed silently, surface a hint after 6s
+  if (camRequestTimer) clearTimeout(camRequestTimer);
+  camRequestTimer = setTimeout(() => {
+    if (!cam.stream){
+      setSrcStatus('err', '✕ No response from camera. Permission may be blocked at the browser or OS level. Click the lock icon in the URL bar → allow Camera → reload. On macOS check System Settings → Privacy → Camera.', true);
+    }
+  }, 6000);
   try {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       throw new Error('getUserMedia not supported in this browser.');
@@ -1330,28 +1374,40 @@ async function startCamera(){
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
     });
-    // Bind to the visible preview <video> in the panel as well, so the user sees themselves.
+    if (camRequestTimer){ clearTimeout(camRequestTimer); camRequestTimer = null; }
+    // Bind to the visible preview <video> first so the user sees the feed immediately.
     const previewVideo = document.getElementById('src-cam-preview');
     if (previewVideo){
       previewVideo.srcObject = stream;
-      try { await previewVideo.play(); } catch {}
+      previewVideo.play().catch(() => {}); // don't await — non-fatal
     }
-    // Hidden working video (sampled into the luminance buffer)
+    // Hidden working video (sampled into the luminance buffer). Don't await play() —
+    // some browsers (Safari especially) never resolve play() when the element isn't
+    // attached to the DOM. Just kick it off and let camTick poll videoWidth/videoHeight.
     const video = document.createElement('video');
     video.srcObject = stream;
     video.autoplay = true;
     video.playsInline = true;
     video.muted = true;
-    await video.play();
+    video.play().catch(() => {});
     const canvas = document.createElement('canvas');
     cam.stream = stream; cam.video = video; cam.canvas = canvas; cam.ctx = canvas.getContext('2d');
-    setSrcStatus('cam', '● Camera live');
+    setSrcStatus('cam', '● Camera live · slashes react');
     camTick();
   } catch (err) {
-    const msg = (err && err.name === 'NotAllowedError')
-      ? '✕ Camera permission denied. Allow it in your browser bar, then re-select Camera.'
-      : '✕ Camera unavailable: ' + (err && err.message || err);
-    setSrcStatus('err', msg);
+    if (camRequestTimer){ clearTimeout(camRequestTimer); camRequestTimer = null; }
+    const name = err && err.name;
+    let msg;
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError'){
+      msg = '✕ Camera blocked. Click the lock/info icon at the left of the URL bar → set Camera to Allow → reload, then re-select Camera.';
+    } else if (name === 'NotFoundError'){
+      msg = '✕ No camera detected on this device.';
+    } else if (name === 'NotReadableError'){
+      msg = '✕ Camera is in use by another app. Close it and try again.';
+    } else {
+      msg = '✕ Camera unavailable: ' + (err && err.message || err);
+    }
+    setSrcStatus('err', msg, true);
     state.source = 'off';
     document.getElementById('source').value = 'off';
     updateSrcHint();
